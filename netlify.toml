@@ -1,13 +1,17 @@
 [build]
-  functions = "netlify/functions"
   publish = "."
+  functions = "netlify/functions"
 
 [functions]
   node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/"
+  to = "/index-2.html"
+  status = 200
 
 [[headers]]
   for = "/*"
   [headers.values]
     X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"

@@ -1,0 +1,13 @@
+# Ambiente
+.env
+.env.local
+
+# Netlify
+.netlify/
+
+# Dependências (caso algum dia adicione um build step)
+node_modules/
+
+# Sistema
+.DS_Store
+Thumbs.db

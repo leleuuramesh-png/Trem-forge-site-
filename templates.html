@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Templates & Exemplos — Trem Forge</title>
+<meta name="description" content="Veja exemplos de sites, apps e sistemas criados com a Trem Forge — a plataforma de IA que leva sua ideia até o software pronto.">
+<meta name="keywords" content="Trem Forge, IA, desenvolvimento de software, agentes de IA">
+<meta name="author" content="Trem Forge">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://tremforge.com/templates.html">
+
+<!-- Open Graph / Facebook, WhatsApp, LinkedIn -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://tremforge.com/templates.html">
+<meta property="og:title" content="Templates & Exemplos — Trem Forge">
+<meta property="og:description" content="Veja exemplos de sites, apps e sistemas criados com a Trem Forge — a plataforma de IA que leva sua ideia até o software pronto.">
+<meta property="og:image" content="https://tremforge.com/images/og-image.png">
+<meta property="og:image:width" content="720">
+<meta property="og:image:height" content="404">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:site_name" content="Trem Forge">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:url" content="https://tremforge.com/templates.html">
+<meta name="twitter:title" content="Templates & Exemplos — Trem Forge">
+<meta name="twitter:description" content="Veja exemplos de sites, apps e sistemas criados com a Trem Forge — a plataforma de IA que leva sua ideia até o software pronto.">
+<meta name="twitter:image" content="https://tremforge.com/images/og-image.png">
+
+<!-- Favicon (SVG inline, tema laranja/trilho) -->
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0D0704">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%2305070D'/%3E%3Cpath d='M20 65 L45 65 L45 35 L20 35 Z M55 65 L80 65 L80 35 L55 35 Z' fill='none' stroke='%23FF5A1F' stroke-width='6'/%3E%3Ccircle cx='30' cy='72' r='6' fill='%23FF5A1F'/%3E%3Ccircle cx='70' cy='72' r='6' fill='%23FF5A1F'/%3E%3Cpath d='M45 50 L55 50' stroke='%23FF9556' stroke-width='6'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0D0704;
+    --card:#170E08;
+    --line:#2E1D12;
+    --primary:#FF5A1F;
+    --primary-light:#FFA366;
+    --violet:#8B5CF6;
+    --cyan:#22D3EE;
+    --amber:#F59E0B;
+    --rust:#C2410C;
+    --text:#F3F4F6;
+    --text-mute:#CBC0B4;
+    --text-faint:#8C7C6E;
+    --primary-grad:linear-gradient(135deg, #E8460C, #FFB347);
+    --radius:22px;
+    --shadow:0 20px 80px rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:'Inter', system-ui, sans-serif;
+    line-height:1.5; -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{font-family:'Geist','Inter',sans-serif; letter-spacing:-0.015em;}
+  a{color:inherit; text-decoration:none;}
+  img{max-width:100%; display:block;}
+  .wrap{max-width:1180px; margin:0 auto; padding:0 24px;}
+
+  /* ---- Nav (mesmo padrão do site principal) ---- */
+  nav{position:sticky; top:0; z-index:50; background:rgba(13,7,4,0.75); backdrop-filter:blur(14px); border-bottom:1px solid var(--line);}
+  .nav-inner{max-width:1100px; margin:0 auto; padding:14px 24px; display:flex; align-items:center; justify-content:space-between;}
+  .brand{display:flex; align-items:center; gap:10px;}
+  .brand-mark{width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center;
+    overflow:hidden; background:#000; box-shadow:0 0 20px rgba(255,90,31,0.4); flex-shrink:0;}
+  .brand-mark img{width:100%; height:100%; object-fit:cover; display:block;}
+  .brand-name{font-size:16px; font-weight:700; font-family:'Geist',sans-serif;}
+  .nav-links{display:none; gap:28px; font-size:14px; color:var(--text-mute);}
+  .nav-links a:hover{color:var(--text);}
+  .nav-links a.active{color:var(--primary-light);}
+  .nav-cta{font-size:13px; font-weight:600; padding:9px 16px; border-radius:9px; background:var(--primary-grad); color:#fff;}
+  @media(min-width:760px){ .nav-links{display:flex;} }
+  .nav-right{display:flex; align-items:center; gap:12px;}
+  .nav-toggle{display:flex; flex-direction:column; justify-content:center; gap:5px; width:36px; height:36px;
+    background:transparent; border:1px solid var(--line); border-radius:8px; cursor:pointer; padding:0; flex-shrink:0;}
+  .nav-toggle span{display:block; width:16px; height:2px; margin:0 auto; background:var(--text); border-radius:2px; transition:transform .2s ease, opacity .2s ease;}
+  .nav-toggle.open span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+  .nav-toggle.open span:nth-child(2){opacity:0;}
+  .nav-toggle.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+  @media(min-width:760px){ .nav-toggle{display:none;} }
+  .mobile-menu{display:none; flex-direction:column; max-height:0; overflow:hidden; background:rgba(13,7,4,0.97);
+    border-bottom:1px solid var(--line); transition:max-height .25s ease;}
+  .mobile-menu.open{max-height:420px;}
+  .mobile-menu a{display:block; padding:14px 24px; font-size:15px; color:var(--text-mute); border-top:1px solid var(--line);}
+  .mobile-menu a:first-child{border-top:none;}
+  .mobile-menu a:hover{color:var(--text); background:rgba(255,255,255,0.03);}
+  @media(max-width:759px){ .mobile-menu{display:flex;} }
+
+  /* ---- Utilitários visuais (fornecidos) ---- */
+  .hero-grid{
+    position:absolute; inset:0;
+    background-image:
+      linear-gradient(rgba(255,90,31,.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,90,31,.06) 1px, transparent 1px);
+    background-size:60px 60px;
+    mask-image:radial-gradient(circle at center,#000 40%,transparent 100%);
+    -webkit-mask-image:radial-gradient(circle at center,#000 40%,transparent 100%);
+    animation:gridMove 18s linear infinite;
+    pointer-events:none;
+  }
+  @keyframes gridMove{ from{transform:translateY(0);} to{transform:translateY(60px);} }
+
+  .glass{
+    background:rgba(255,255,255,.05);
+    backdrop-filter:blur(18px);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:var(--radius);
+    box-shadow:0 20px 80px rgba(0,0,0,.35);
+  }
+  .glow-text{
+    background:linear-gradient(90deg,#ffffff,#ffb347,#ff5a1f);
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent;
+  }
+  .btn-premium{
+    display:inline-block;
+    background:linear-gradient(135deg,#ff5a1f,#ff9d3c);
+    padding:16px 32px; border-radius:16px; font-weight:700; font-size:15px; color:#fff;
+    transition:.35s; box-shadow:0 15px 45px rgba(255,90,31,.45); border:none; cursor:pointer;
+  }
+  .btn-premium:hover{ transform:translateY(-4px); box-shadow:0 25px 60px rgba(255,90,31,.65); }
+  .card-hover{ transition:.4s; }
+  .card-hover:hover{ transform:translateY(-10px); border-color:#ff5a1f; }
+
+  /* ---- Hero da página ---- */
+  .tpl-hero{position:relative; overflow:hidden; padding:72px 0 48px; text-align:center;}
+  .eyebrow{display:inline-flex; align-items:center; gap:8px; padding:8px 16px; border-radius:100px; font-size:13px;
+    color:var(--primary-light); margin-bottom:22px;}
+  .tpl-hero h1{font-size:40px; font-weight:800; line-height:1.12; margin-bottom:16px;}
+  .tpl-hero p{max-width:560px; margin:0 auto 30px; color:var(--text-mute); font-size:16px;}
+  @media(min-width:760px){ .tpl-hero h1{font-size:54px;} }
+
+  /* ---- Filtros ---- */
+  .filters{display:flex; flex-wrap:wrap; gap:10px; justify-content:center; padding:0 24px 44px;}
+  .filter-btn{padding:9px 18px; border-radius:100px; border:1px solid var(--line); background:transparent;
+    color:var(--text-mute); font-size:13px; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif; transition:.25s;}
+  .filter-btn:hover{color:var(--text); border-color:var(--primary);}
+  .filter-btn.active{background:var(--primary-grad); color:#fff; border-color:transparent;}
+
+  /* ---- Grid de templates ---- */
+  .tpl-grid{display:grid; grid-template-columns:1fr; gap:22px; padding-bottom:80px;}
+  @media(min-width:640px){ .tpl-grid{grid-template-columns:repeat(2,1fr);} }
+  @media(min-width:980px){ .tpl-grid{grid-template-columns:repeat(3,1fr);} }
+
+  .tpl-card{padding:0; overflow:hidden; display:flex; flex-direction:column; border:1px solid var(--line); position:relative;}
+  .tpl-thumb{height:150px; position:relative; display:flex; align-items:center; justify-content:center; font-size:38px; overflow:hidden;}
+  .tpl-thumb img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:top center;}
+  .tpl-thumb::after{content:""; position:absolute; inset:0; background:linear-gradient(180deg, transparent 40%, rgba(13,7,4,.55));}
+  .tpl-body{padding:20px 22px 24px;}
+  .fav-btn{position:absolute; top:10px; right:10px; z-index:2; width:32px; height:32px; border-radius:9px;
+    background:rgba(13,7,4,.55); backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,.15);
+    color:#fff; font-size:15px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:.2s;}
+  .fav-btn:hover{transform:scale(1.08); border-color:var(--primary);}
+  .fav-btn.active{background:var(--primary-grad); border-color:transparent;}
+  #tplToasts{position:fixed; top:80px; right:18px; z-index:80; display:flex; flex-direction:column; gap:10px; max-width:300px;}
+  .tpl-toast{background:#170E08; border:1px solid rgba(255,255,255,.1); border-radius:12px; padding:11px 15px;
+    box-shadow:0 12px 30px rgba(0,0,0,.5); font-size:12.5px; color:var(--text-mute); animation:tpl-toast-in .2s ease;}
+  @keyframes tpl-toast-in{from{opacity:0; transform:translateX(16px);} to{opacity:1; transform:translateX(0);}}
+  .tpl-toast.leaving{animation:tpl-toast-out .18s ease forwards;}
+  @keyframes tpl-toast-out{to{opacity:0; transform:translateX(16px);}}
+  .tpl-tag{display:inline-block; font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+    color:var(--primary-light); background:rgba(255,90,31,.12); padding:4px 10px; border-radius:6px; margin-bottom:12px;}
+  .tpl-title{font-size:18px; font-weight:700; font-family:'Geist',sans-serif; margin-bottom:8px;}
+  .tpl-desc{font-size:14px; color:var(--text-mute); margin-bottom:16px;}
+  .tpl-stack{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:18px;}
+  .tpl-stack span{font-size:11px; font-family:'JetBrains Mono',monospace; color:var(--text-faint);
+    border:1px solid var(--line); padding:3px 8px; border-radius:6px;}
+  .tpl-link{font-size:13px; font-weight:600; color:var(--primary-light); display:inline-flex; align-items:center; gap:6px;}
+  .tpl-link:hover{color:var(--primary);}
+
+  .placeholder-note{max-width:680px; margin:0 auto 46px; text-align:center; font-size:13px;
+    color:var(--text-faint); font-family:'JetBrains Mono',monospace; padding:0 24px;}
+
+  /* ---- CTA final ---- */
+  .final-cta{text-align:center; padding:60px 24px 90px;}
+  .final-cta h2{font-size:30px; margin-bottom:14px;}
+  .final-cta p{color:var(--text-mute); margin-bottom:28px;}
+
+  footer{text-align:center; padding:26px 24px 40px; color:var(--text-faint); font-size:12px; font-family:'JetBrains Mono',monospace;}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index-2.html" class="brand">
+      <div class="brand-mark"><img src="data:image/webp;base64,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" alt="Trem Forge"></div>
+      <span class="brand-name">Trem Forge</span>
+    </a>
+    <div class="nav-links">
+      <a href="index-2.html#agentes">Produto</a>
+      <a href="index-2.html#trilho">Soluções</a>
+      <a href="index-2.html#planos">Preços</a>
+      <a href="templates.html" class="active">Templates</a>
+      <a href="docs.html">Desenvolvedores</a>
+    </div>
+    <div class="nav-right">
+      <a href="index-2.html#embarcar" class="nav-cta">Criar meu software</a>
+      <button class="nav-toggle" id="navToggle" aria-label="Abrir menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="index-2.html#agentes">Produto</a>
+    <a href="index-2.html#trilho">Soluções</a>
+    <a href="index-2.html#planos">Preços</a>
+    <a href="templates.html">Templates</a>
+    <a href="docs.html">Desenvolvedores</a>
+    <a href="index-2.html#embarcar">Criar meu software →</a>
+  </div>
+</nav>
+
+<div id="tplToasts"></div>
+
+<section class="tpl-hero">
+  <div class="hero-grid"></div>
+  <div class="wrap" style="position:relative;">
+    <span class="eyebrow glass">🛤️ Galeria de exemplos</span>
+    <h1><span class="glow-text">O que já saiu</span><br>dos trilhos</h1>
+    <p>Uma amostra do que os agentes de IA da Trem Forge conseguem construir — do brief inicial ao deploy, sem escalas.</p>
+  </div>
+</section>
+
+<div class="placeholder-note">
+  ⚠ Os projetos abaixo são exemplos ilustrativos de placeholder. Edite o array <strong>PROJECTS</strong> no final do arquivo (dentro da tag &lt;script&gt;) para trocar por projetos reais — veja o guia de campos nos comentários ao lado do array.
+</div>
+
+<div class="filters" id="filters">
+  <button class="filter-btn active" data-filter="todos">Todos</button>
+  <button class="filter-btn" data-filter="site">Sites</button>
+  <button class="filter-btn" data-filter="app">Apps</button>
+  <button class="filter-btn" data-filter="sistema">Sistemas</button>
+  <button class="filter-btn" data-filter="favoritos">★ Favoritos</button>
+</div>
+
+<div class="wrap">
+  <p id="favEmptyNote" style="display:none; text-align:center; color:var(--text-faint); font-size:13.5px; padding:20px 0;">
+    Você ainda não favoritou nenhum projeto. Clique na estrela ☆ nos cards pra salvar aqui.
+  </p>
+  <div class="tpl-grid" id="tplGrid"></div>
+</div>
+
+<section class="final-cta">
+  <div class="wrap">
+    <h2><span class="glow-text">Sua ideia é a próxima</span></h2>
+    <p>Descreva o que você quer construir e veja os agentes de IA colocarem no trilho.</p>
+    <a href="index-2.html#embarcar" class="btn-premium">Criar meu software →</a>
+  </div>
+</section>
+
+<footer>
+  © 2026 TREM FORGE — todas as estações, uma só viagem
+  <div style="margin-top:10px;">
+    <a href="index-2.html" style="color:var(--text-faint); text-decoration:underline; margin:0 10px;">Início</a>
+    <a href="privacidade.html" style="color:var(--text-faint); text-decoration:underline; margin:0 10px;">Política de Privacidade</a>
+    <a href="termos.html" style="color:var(--text-faint); text-decoration:underline; margin:0 10px;">Termos de Uso</a>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    // ============================================================
+    // PROJECTS — edite este array para trocar os exemplos ilustrativos
+    // por projetos reais. Cada objeto vira um card na galeria.
+    //
+    // Campos:
+    //   cat      'site' | 'app' | 'sistema'   (controla os filtros)
+    //   tag      Rótulo exibido no card, ex: 'Site', 'App', 'Sistema'
+    //   title    Título do projeto
+    //   desc     Descrição curta (1 frase)
+    //   stack    Array de strings com as tecnologias usadas
+    //   link     URL real do projeto (deixe '#' se ainda não tiver)
+    //   image    Caminho/URL de um screenshot real (ex: 'images/projetos/padaria.webp').
+    //            Se null/omitido, usa o fallback abaixo (emoji + gradiente).
+    //   emoji    Emoji de fallback, usado apenas quando não há "image"
+    //   gradient Gradiente CSS de fundo, usado apenas quando não há "image"
+    // ============================================================
+    var PROJECTS = [
+      {
+        id: 'trem-forge',
+        cat: 'site', tag: 'Site',
+        title: 'Trem Forge',
+        desc: 'Landing page e plataforma de agentes de IA que levam uma ideia do zero ao software pronto para produção.',
+        stack: ['HTML/CSS', 'Netlify Functions', 'Formspree'],
+        link: 'https://tremforge.com/', image: 'images/projetos/trem-forge.png', emoji: '🚂',
+        gradient: 'linear-gradient(135deg,#3b1f0f,#ff5a1f33)'
+      },
+      {
+        id: 'skillverse',
+        cat: 'sistema', tag: 'Sistema',
+        title: 'SkillVerse',
+        desc: 'Plataforma multi-universo de aprendizado, entretenimento e marketplace com busca por IA.',
+        stack: ['IA de busca', 'Marketplace', 'Multi-plataforma'],
+        link: '#', image: 'images/projetos/skillverse.png', emoji: '📚',
+        gradient: 'linear-gradient(135deg,#1e1b4b,#4f46e533)'
+      },
+      {
+        id: 'elaris-ai-os',
+        cat: 'sistema', tag: 'Sistema',
+        title: 'Elaris AI OS',
+        desc: 'Sistema operacional de IA com 24+ Studios, agentes especializados e marketplace de apps.',
+        stack: ['Next.js', 'IA multi-agente', 'Marketplace'],
+        link: '#', image: 'images/projetos/elaris-ai-os.png', emoji: '🧠',
+        gradient: 'linear-gradient(135deg,#1f0f3b,#8b5cf633)'
+      },
+      {
+        id: 'gestao-financeira-pme',
+        cat: 'sistema', tag: 'Sistema',
+        title: 'Sistema de gestão financeira (PME)',
+        desc: 'Fluxo de caixa, emissão de boletos e dashboard de faturamento.',
+        stack: ['Next.js', 'Supabase'],
+        link: '#', image: null, emoji: '🧾',
+        gradient: 'linear-gradient(135deg,#0f1f3b,#8b5cf633)'
+      },
+      {
+        id: 'gestao-estoque',
+        cat: 'sistema', tag: 'Sistema',
+        title: 'Sistema de gestão de estoque',
+        desc: 'Controle de entrada/saída, alertas de reposição e relatórios automáticos.',
+        stack: ['Next.js', 'PostgreSQL'],
+        link: '#', image: null, emoji: '📦',
+        gradient: 'linear-gradient(135deg,#3b0f0f,#c2410c33)'
+      },
+      {
+        id: 'delivery-local',
+        cat: 'app', tag: 'App',
+        title: 'App de delivery local',
+        desc: 'Pedido, rastreio de entrega em tempo real e pagamento integrado.',
+        stack: ['React Native', 'Node.js', 'Stripe'],
+        link: '#', image: null, emoji: '🛵',
+        gradient: 'linear-gradient(135deg,#0f3b2a,#22d3ee33)'
+      },
+      {
+        id: 'treinos-personalizados',
+        cat: 'app', tag: 'App',
+        title: 'App de treinos personalizados',
+        desc: 'Planos de treino adaptativos, progresso do usuário e lembretes.',
+        stack: ['Flutter', 'Firebase'],
+        link: '#', image: null, emoji: '🏋️',
+        gradient: 'linear-gradient(135deg,#3b2a0f,#f59e0b33)'
+      },
+    ];
+
+    // ============================================================
+    // FAVORITOS — funciona sem login (localStorage) e sincroniza com a
+    // conta assim que o visitante entra (mescla os favoritos locais).
+    // ============================================================
+    var LOCAL_KEY = 'tf_favorites';
+    var favorites = [];
+    var isLoggedIn = false;
+    var mergedLocalOnLogin = false;
+
+    function loadLocalFavorites() {
+      try {
+        var raw = localStorage.getItem(LOCAL_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) { return []; }
+    }
+    function saveLocalFavorites(list) {
+      try { localStorage.setItem(LOCAL_KEY, JSON.stringify(list)); } catch (e) {}
+    }
+
+    function tplNotify(title, msg) {
+      var box = document.getElementById('tplToasts');
+      if (!box) return;
+      var el = document.createElement('div');
+      el.className = 'tpl-toast';
+      el.innerHTML = '<strong style="color:var(--text); display:block; margin-bottom:2px;"></strong><span></span>';
+      el.querySelector('strong').textContent = title;
+      el.querySelector('span').textContent = msg || '';
+      box.appendChild(el);
+      setTimeout(function () {
+        el.classList.add('leaving');
+        setTimeout(function () { el.remove(); }, 200);
+      }, 3200);
+    }
+
+    function isFavorite(id) {
+      return favorites.indexOf(id) !== -1;
+    }
+
+    function updateHeartButtons() {
+      document.querySelectorAll('.fav-btn').forEach(function (btn) {
+        var id = btn.getAttribute('data-fav-id');
+        btn.classList.toggle('active', isFavorite(id));
+        btn.textContent = isFavorite(id) ? '★' : '☆';
+      });
+    }
+
+    function toggleFavorite(id, title) {
+      var wasFav = isFavorite(id);
+      if (wasFav) {
+        favorites = favorites.filter(function (f) { return f !== id; });
+      } else {
+        favorites.push(id);
+      }
+      updateHeartButtons();
+      saveLocalFavorites(favorites);
+
+      if (isLoggedIn) {
+        fetch('/.netlify/functions/favorites-toggle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ projectId: id }),
+        }).catch(function () {});
+      }
+
+      tplNotify(wasFav ? 'Removido dos favoritos' : 'Adicionado aos favoritos ★', title);
+      trackEvent(wasFav ? 'unfavorite' : 'favorite', title);
+
+      var activeFilter = document.querySelector('.filter-btn.active');
+      if (activeFilter && activeFilter.getAttribute('data-filter') === 'favoritos') {
+        applyFilter('favoritos');
+      }
+    }
+
+    function applyFilter(f) {
+      var anyVisible = false;
+      document.querySelectorAll('#tplGrid .tpl-card').forEach(function (card) {
+        var show = f === 'todos'
+          || (f === 'favoritos' ? isFavorite(card.getAttribute('data-id')) : card.getAttribute('data-cat') === f);
+        card.style.display = show ? 'flex' : 'none';
+        if (show) anyVisible = true;
+      });
+      var note = document.getElementById('favEmptyNote');
+      if (note) note.style.display = (f === 'favoritos' && !anyVisible) ? 'block' : 'none';
+    }
+
+    function reapplyActiveFilter() {
+      var active = document.querySelector('.filter-btn.active');
+      applyFilter(active ? active.getAttribute('data-filter') : 'todos');
+    }
+
+    function initFavoritesSync() {
+      fetch('/.netlify/functions/auth-me')
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (!data || !data.user) { return; }
+          isLoggedIn = true;
+          var accountFavs = data.user.favorites || [];
+          var localFavs = loadLocalFavorites();
+          var toMerge = localFavs.filter(function (id) { return accountFavs.indexOf(id) === -1; });
+
+          if (toMerge.length && !mergedLocalOnLogin) {
+            mergedLocalOnLogin = true;
+            fetch('/.netlify/functions/favorites-toggle', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ merge: toMerge }),
+            })
+              .then(function (r) { return r.json(); })
+              .then(function (res) {
+                favorites = res.favorites || accountFavs.concat(toMerge);
+                saveLocalFavorites(favorites);
+                updateHeartButtons();
+                reapplyActiveFilter();
+                if (toMerge.length) tplNotify('Favoritos sincronizados', 'Seus favoritos salvos localmente agora estão na sua conta.');
+              })
+              .catch(function () {});
+          } else {
+            favorites = accountFavs;
+            saveLocalFavorites(favorites);
+            updateHeartButtons();
+            reapplyActiveFilter();
+          }
+        })
+        .catch(function () { /* offline ou sem sessão — mantém favoritos locais */ });
+    }
+
+    // Tracking mínimo: envia um beacon pra /.netlify/functions/track.
+    // Silencioso e best-effort — nunca deve travar a navegação do usuário.
+    function trackEvent(type, value) {
+      try {
+        var payload = JSON.stringify({ type: type, value: value, page: 'templates' });
+        if (navigator.sendBeacon) {
+          var blob = new Blob([payload], { type: 'application/json' });
+          navigator.sendBeacon('/.netlify/functions/track', blob);
+        } else {
+          fetch('/.netlify/functions/track', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: payload,
+            keepalive: true,
+          }).catch(function () {});
+        }
+      } catch (err) {
+        // Tracking nunca deve quebrar a página.
+      }
+    }
+
+    function escapeHtml(str) {
+      var div = document.createElement('div');
+      div.textContent = str == null ? '' : String(str);
+      return div.innerHTML;
+    }
+
+    function renderProjects() {
+      var grid = document.getElementById('tplGrid');
+      if (!grid) return;
+
+      grid.innerHTML = PROJECTS.map(function (p) {
+        var thumbInner = p.image
+          ? '<img src="' + escapeHtml(p.image) + '" alt="' + escapeHtml(p.title) + '" loading="lazy">'
+          : escapeHtml(p.emoji || '');
+        var thumbStyle = p.image ? '' : ' style="background:' + (p.gradient || '') + ';"';
+        var stackHtml = (p.stack || []).map(function (s) { return '<span>' + escapeHtml(s) + '</span>'; }).join('');
+
+        return (
+          '<div class="tpl-card glass card-hover" data-cat="' + escapeHtml(p.cat) + '" data-id="' + escapeHtml(p.id) + '">' +
+            '<button class="fav-btn" type="button" data-fav-id="' + escapeHtml(p.id) + '" data-fav-title="' + escapeHtml(p.title) + '" aria-label="Favoritar">☆</button>' +
+            '<div class="tpl-thumb"' + thumbStyle + '>' + thumbInner + '</div>' +
+            '<div class="tpl-body">' +
+              '<span class="tpl-tag">' + escapeHtml(p.tag) + '</span>' +
+              '<div class="tpl-title">' + escapeHtml(p.title) + '</div>' +
+              '<p class="tpl-desc">' + escapeHtml(p.desc) + '</p>' +
+              '<div class="tpl-stack">' + stackHtml + '</div>' +
+              '<a href="' + escapeHtml(p.link || '#') + '" class="tpl-link">Ver exemplo →</a>' +
+            '</div>' +
+          '</div>'
+        );
+      }).join('');
+      updateHeartButtons();
+    }
+
+    renderProjects();
+    favorites = loadLocalFavorites();
+    updateHeartButtons();
+    initFavoritesSync();
+
+    var toggle = document.getElementById('navToggle');
+    var menu = document.getElementById('mobileMenu');
+    if (toggle && menu) {
+      toggle.addEventListener('click', function () {
+        var isOpen = menu.classList.toggle('open');
+        toggle.classList.toggle('open', isOpen);
+        toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      });
+      menu.querySelectorAll('a').forEach(function (link) {
+        link.addEventListener('click', function () {
+          menu.classList.remove('open');
+          toggle.classList.remove('open');
+          toggle.setAttribute('aria-expanded', 'false');
+        });
+      });
+    }
+
+    var filterBtns = document.querySelectorAll('.filter-btn');
+    filterBtns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        filterBtns.forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        var f = btn.getAttribute('data-filter');
+        applyFilter(f);
+        trackEvent('filter_click', f);
+      });
+    });
+
+    var tplGrid = document.getElementById('tplGrid');
+    if (tplGrid) {
+      tplGrid.addEventListener('click', function (ev) {
+        var favBtn = ev.target.closest ? ev.target.closest('.fav-btn') : null;
+        if (favBtn) {
+          toggleFavorite(favBtn.getAttribute('data-fav-id'), favBtn.getAttribute('data-fav-title'));
+          return;
+        }
+        var link = ev.target.closest ? ev.target.closest('.tpl-link') : null;
+        if (!link) return;
+        var card = link.closest('.tpl-card');
+        var title = card ? card.querySelector('.tpl-title') : null;
+        trackEvent('project_click', title ? title.textContent : '');
+      });
+    }
+  })();
+</script>
+
+</body>
+</html>

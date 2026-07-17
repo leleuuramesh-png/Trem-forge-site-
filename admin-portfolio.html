@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel — Autorizações de Portfólio</title>
+<style>
+  :root{
+    --iron:#1b1c1e; --iron-2:#232426; --steel:#3a3d42;
+    --paper:#efe9df; --paper-dim:#b8b1a4;
+    --ember:#c8632c; --ember-bright:#e07b3f;
+    --ok:#5a9d6f; --danger:#b8483f;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--iron);color:var(--paper);font-family:'Courier New',ui-monospace,monospace;}
+  .wrap{max-width:960px;margin:0 auto;padding:40px 24px 80px;}
+  h1{font-family:Georgia,serif;font-size:26px;margin:0 0 4px;}
+  .sub{color:var(--paper-dim);font-size:13px;margin:0 0 28px;}
+
+  #gate{max-width:340px;margin:80px auto;text-align:center;}
+  #gate input{
+    width:100%;background:var(--iron-2);border:1px solid var(--steel);color:var(--paper);
+    padding:12px;font-family:inherit;font-size:15px;border-radius:2px;margin-bottom:12px;
+  }
+  #gate button{
+    width:100%;background:var(--ember);color:var(--iron);border:none;padding:12px;
+    font-family:inherit;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
+    border-radius:2px;cursor:pointer;
+  }
+  #gate button:hover{background:var(--ember-bright);}
+  #gateError{color:var(--danger);font-size:13px;margin-top:8px;display:none;}
+
+  #panel{display:none;}
+  .card{
+    border:1px solid var(--steel);border-radius:4px;background:var(--iron-2);
+    padding:18px 20px;margin-bottom:14px;
+  }
+  .card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
+  .card-title{font-size:16px;font-weight:700;}
+  .card-client{font-size:13px;color:var(--paper-dim);margin-top:2px;}
+  .badge{
+    font-size:11px;text-transform:uppercase;letter-spacing:.05em;
+    padding:4px 10px;border-radius:12px;white-space:nowrap;
+  }
+  .badge.pub{background:rgba(90,157,111,.15);color:var(--ok);}
+  .badge.priv{background:rgba(184,72,63,.15);color:var(--danger);}
+  .badge.pending{background:rgba(224,123,63,.15);color:var(--ember-bright);}
+  .meta{font-size:12px;color:var(--paper-dim);margin-top:10px;line-height:1.7;}
+  .meta b{color:var(--paper);}
+  .msg{
+    font-size:13px;color:var(--paper);margin-top:10px;padding:10px 12px;
+    background:rgba(255,255,255,.03);border-radius:3px;
+  }
+  .actions{margin-top:12px;}
+  .revoke-btn{
+    background:transparent;border:1px solid var(--danger);color:var(--danger);
+    padding:6px 12px;font-family:inherit;font-size:12px;border-radius:2px;cursor:pointer;
+    text-transform:uppercase;letter-spacing:.04em;
+  }
+  .revoke-btn:hover{background:rgba(184,72,63,.1);}
+  .revoke-btn:disabled{opacity:.4;cursor:default;}
+  .empty{color:var(--paper-dim);font-size:14px;text-align:center;padding:60px 0;}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <h1 style="font-size:20px;">Painel de Portfólio</h1>
+  <p class="sub">Acesso restrito.</p>
+  <input type="password" id="pwInput" placeholder="Senha de administrador">
+  <button onclick="tryLogin()">Entrar</button>
+  <div id="gateError">Senha incorreta.</div>
+</div>
+
+<div class="wrap" id="panel">
+  <h1>Autorizações de Portfólio</h1>
+  <p class="sub" id="countLine"></p>
+  <div id="list"></div>
+</div>
+
+<script>
+const API_LIST = '/.netlify/functions/portfolio-list';
+const API_REVOKE = '/.netlify/functions/portfolio-revoke';
+
+function getPassword(){ return localStorage.getItem('tf_admin_pw') || ''; }
+function setPassword(pw){ localStorage.setItem('tf_admin_pw', pw); }
+
+async function tryLogin(){
+  const pw = document.getElementById('pwInput').value;
+  setPassword(pw);
+  const ok = await loadList();
+  if(ok){
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('panel').style.display = 'block';
+  } else {
+    document.getElementById('gateError').style.display = 'block';
+  }
+}
+
+function visLabel(v){
+  return { public: 'Público completo', anonymous: 'Anônimo', after_delivery: 'Após entrega' }[v] || '—';
+}
+
+function renderRecord(r){
+  const isPublic = r.portfolio_permission && !r.revoked;
+  const badgeClass = r.revoked ? 'priv' : (r.portfolio_permission ? 'pub' : 'priv');
+  const badgeText = r.revoked ? '🔒 Revogado' : (r.portfolio_permission ? '🟢 Autorizado' : '🔒 Privado');
+
+  return `
+    <div class="card" data-id="${r.id}">
+      <div class="card-top">
+        <div>
+          <div class="card-title">${r.projectName}</div>
+          <div class="card-client">${r.clientName} · ${r.email}</div>
+        </div>
+        <span class="badge ${badgeClass}">${badgeText}</span>
+      </div>
+      <div class="meta">
+        <b>Visibilidade:</b> ${visLabel(r.portfolio_visibility)} &nbsp;·&nbsp;
+        <b>Nome da empresa:</b> ${r.show_company_name ? 'sim' : 'não'} &nbsp;·&nbsp;
+        <b>Link do projeto:</b> ${r.show_project_link ? 'sim' : 'não'}<br>
+        <b>Nome de exibição:</b> ${r.display_name || '—'}<br>
+        <b>Autorizado em:</b> ${new Date(r.authorization_date).toLocaleString('pt-BR')}
+        ${r.revoked ? `<br><b>Revogado em:</b> ${new Date(r.revoked_date).toLocaleString('pt-BR')}` : ''}
+      </div>
+      ${r.portfolio_message ? `<div class="msg">${r.portfolio_message}</div>` : ''}
+      <div class="actions">
+        <button class="revoke-btn" ${r.revoked ? 'disabled' : ''} onclick="revoke('${r.id}')">
+          ${r.revoked ? 'Já revogado' : 'Marcar como revogado'}
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+async function loadList(){
+  try{
+    const res = await fetch(API_LIST, { headers: { 'x-admin-password': getPassword() } });
+    if(res.status === 401) return false;
+    const data = await res.json();
+    const records = data.records || [];
+    document.getElementById('countLine').textContent = `${records.length} registro(s)`;
+    document.getElementById('list').innerHTML = records.length
+      ? records.map(renderRecord).join('')
+      : '<div class="empty">Nenhuma autorização recebida ainda.</div>';
+    return true;
+  }catch(err){
+    console.error(err);
+    return false;
+  }
+}
+
+async function revoke(id){
+  if(!confirm('Confirma marcar este projeto como revogado? Ele deixará de poder ser exibido.')) return;
+  try{
+    const res = await fetch(API_REVOKE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': getPassword() },
+      body: JSON.stringify({ id }),
+    });
+    if(res.ok){ loadList(); } else { alert('Não foi possível revogar.'); }
+  }catch(err){
+    alert('Erro de conexão ao revogar.');
+  }
+}
+
+// Se já tem senha salva, tenta entrar direto
+(async function init(){
+  if(getPassword()){
+    const ok = await loadList();
+    if(ok){
+      document.getElementById('gate').style.display = 'none';
+      document.getElementById('panel').style.display = 'block';
+    }
+  }
+})();
+</script>
+</body>
+</html>

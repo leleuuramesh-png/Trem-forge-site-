@@ -1,0 +1,11 @@
+{
+  "name": "trem-forge-site",
+  "private": true,
+  "description": "Site estático da Trem Forge, com a Netlify Function /.netlify/functions/chat integrando a API da Anthropic.",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  }
+}

@@ -3,18 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Termos de Uso — Trem Forge</title>
-<meta name="description" content="Termos de uso da plataforma Trem Forge.">
+<title>Documentação — Trem Forge</title>
+<meta name="description" content="Documentação técnica da Trem Forge: como funciona a geração de software por IA, integração do chat e estrutura do site.">
 <meta name="keywords" content="Trem Forge, IA, desenvolvimento de software, agentes de IA">
 <meta name="author" content="Trem Forge">
 <meta name="robots" content="index, follow">
-<link rel="canonical" href="https://tremforge.com/termos.html">
+<link rel="canonical" href="https://tremforge.com/docs.html">
 
 <!-- Open Graph / Facebook, WhatsApp, LinkedIn -->
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://tremforge.com/termos.html">
-<meta property="og:title" content="Termos de Uso — Trem Forge">
-<meta property="og:description" content="Termos de uso da plataforma Trem Forge.">
+<meta property="og:url" content="https://tremforge.com/docs.html">
+<meta property="og:title" content="Documentação — Trem Forge">
+<meta property="og:description" content="Documentação técnica da Trem Forge: como funciona a geração de software por IA, integração do chat e estrutura do site.">
 <meta property="og:image" content="https://tremforge.com/images/og-image.png">
 <meta property="og:image:width" content="720">
 <meta property="og:image:height" content="404">
@@ -23,9 +23,9 @@
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:url" content="https://tremforge.com/termos.html">
-<meta name="twitter:title" content="Termos de Uso — Trem Forge">
-<meta name="twitter:description" content="Termos de uso da plataforma Trem Forge.">
+<meta name="twitter:url" content="https://tremforge.com/docs.html">
+<meta name="twitter:title" content="Documentação — Trem Forge">
+<meta name="twitter:description" content="Documentação técnica da Trem Forge: como funciona a geração de software por IA, integração do chat e estrutura do site.">
 <meta name="twitter:image" content="https://tremforge.com/images/og-image.png">
 
 <!-- Favicon (SVG inline, tema laranja/trilho) -->
@@ -207,43 +207,75 @@
 <section class="doc-hero">
   <div class="hero-grid"></div>
   <div class="wrap" style="position:relative;">
-    <span class="eyebrow glass">📄 Termos</span>
-    <h1><span class="glow-text">Termos de</span><br>Uso</h1>
-    <p>As regras que regem o uso do site e dos serviços da Trem Forge.</p>
+    <span class="eyebrow glass">🧩 Para desenvolvedores</span>
+    <h1><span class="glow-text">Documentação</span><br>e referência técnica</h1>
+    <p>Como os agentes de IA da Trem Forge estruturam, geram e publicam projetos — e como você pode integrar ou estender o fluxo.</p>
   </div>
 </section>
 
-<div class="doc-updated">Última atualização: julho de 2026</div>
+<div class="doc-toc">
+  <a href="#visao-geral">Visão geral</a>
+  <a href="#comecando">Começando</a>
+  <a href="#chat-ia">API do chat de IA</a>
+  <a href="#stack">Stack e deploy</a>
+  <a href="#faq">Perguntas frequentes</a>
+</div>
 
 <div class="doc-wrap">
-  <h2>1. Aceitação dos termos</h2>
-  <p>Ao acessar ou usar o site e os serviços da Trem Forge, você concorda com estes Termos de Uso. Se não concordar, pedimos que não utilize a plataforma.</p>
 
-  <h2>2. Descrição do serviço</h2>
-  <p>A Trem Forge disponibiliza agentes de IA que auxiliam na criação de software a partir de descrições em linguagem natural, incluindo geração de código, sugestões de arquitetura e apoio ao deploy.</p>
+  <h2 id="visao-geral">Visão geral</h2>
+  <p>A Trem Forge orquestra agentes de IA especializados — planejamento, front-end, back-end, banco de dados e deploy — para levar uma ideia descrita em linguagem natural até um software funcional, publicado e pronto para uso.</p>
+  <p>Esta página documenta os principais pontos de integração do site: o widget de chat com IA, o formulário de envio de projeto e a estrutura de páginas do site institucional.</p>
 
-  <h2>3. Cadastro e uso do formulário de projeto</h2>
-  <p>Ao enviar um projeto pelo formulário do site, você declara que as informações fornecidas são verdadeiras e que possui autorização para solicitar o serviço descrito.</p>
-
-  <h2>4. Uso aceitável</h2>
-  <p>Você concorda em não utilizar o site ou o chat de IA para:</p>
+  <h2 id="comecando">Começando</h2>
+  <p>O site é composto por HTML estático (sem build step), com os seguintes arquivos principais:</p>
   <ul>
-    <li>Gerar ou solicitar conteúdo ilegal, malicioso ou que viole direitos de terceiros;</li>
-    <li>Tentar comprometer a segurança ou disponibilidade do site;</li>
-    <li>Reproduzir ou redistribuir o conteúdo do site sem autorização.</li>
+    <li><code>index-2.html</code> — landing page principal</li>
+    <li><code>templates.html</code> — galeria de exemplos de projetos</li>
+    <li><code>docs.html</code> — esta página</li>
+    <li><code>privacidade.html</code> e <code>termos.html</code> — páginas legais</li>
+    <li><code>images/</code> — imagens usadas nos planos de fundo</li>
+  </ul>
+  <p>Para rodar localmente, basta servir a pasta com qualquer servidor estático (não há dependências de build).</p>
+
+  <h2 id="chat-ia">API do chat de IA</h2>
+  <p>O widget "Testar IA" na landing page envia mensagens para uma função serverless:</p>
+  <pre><code>POST /.netlify/functions/chat
+Content-Type: application/json
+
+{
+  "messages": [
+    { "role": "user", "content": "Quero um app de delivery" }
+  ]
+}</code></pre>
+  <p>Resposta esperada:</p>
+  <pre><code>{
+  "reply": "Ótimo! Me conta mais sobre..."
+}</code></pre>
+  <p>Essa função já está implementada em <code>netlify/functions/chat.js</code> e usa a API da Anthropic (Claude) por trás. Para funcionar em produção, configure a variável de ambiente abaixo no painel da Netlify (Site settings → Environment variables):</p>
+  <pre><code>ANTHROPIC_API_KEY=sk-ant-sua-chave-aqui
+
+# opcional — padrão: claude-sonnet-4-6
+ANTHROPIC_MODEL=claude-sonnet-4-6</code></pre>
+  <p>Sem essa chave configurada, a function responde com erro 500 e o widget mostra uma mensagem de indisponibilidade — o restante do site continua funcionando normalmente.</p>
+
+  <h3>Formulário de projeto (Formspree)</h3>
+  <p>O formulário "Enviar Projeto" já está funcional e envia os dados via <code>POST</code> para o Formspree, sem necessidade de backend próprio.</p>
+
+  <h2 id="stack">Stack e deploy</h2>
+  <ul>
+    <li>HTML/CSS/JS puro — sem framework de build</li>
+    <li>Fontes via Google Fonts (Geist, Inter, JetBrains Mono)</li>
+    <li>Formulário de leads via Formspree</li>
+    <li>Analytics via Google Tag (gtag.js)</li>
+    <li>Hospedagem recomendada: Netlify (para suportar as Functions do chat)</li>
   </ul>
 
-  <h2>5. Propriedade intelectual</h2>
-  <p>Marca, layout, textos e elementos visuais do site pertencem à Trem Forge. O código gerado sob demanda para cada projeto pertence ao cliente que o solicitou, salvo acordo específico em contrário.</p>
-
-  <h2>6. Limitação de responsabilidade</h2>
-  <p>O conteúdo gerado por IA pode conter erros. A Trem Forge não garante que o software produzido esteja livre de falhas e recomenda revisão antes do uso em produção.</p>
-
-  <h2>7. Alterações nos serviços e nos termos</h2>
-  <p>Podemos alterar funcionalidades do site ou estes termos a qualquer momento. Alterações relevantes serão refletidas na data de atualização no topo desta página.</p>
-
-  <h2>8. Contato</h2>
-  <p>Dúvidas sobre estes termos podem ser enviadas pelos canais de contato disponíveis no site.</p>
+  <h2 id="faq">Perguntas frequentes</h2>
+  <h3>Preciso saber programar para usar a Trem Forge?</h3>
+  <p>Não. A plataforma foi criada justamente para quem não é desenvolvedor — você descreve o que quer e os agentes cuidam da parte técnica.</p>
+  <h3>Posso pedir alterações depois que o projeto for gerado?</h3>
+  <p>Sim, novas instruções podem ser enviadas a qualquer momento para ajustar o que já foi construído.</p>
 </div>
 
 <footer>
