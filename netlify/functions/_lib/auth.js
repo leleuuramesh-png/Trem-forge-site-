@@ -15,30 +15,45 @@ const { getStore } = require('@netlify/blobs');
 const SESSION_COOKIE = 'tf_session';
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 dias
 
+// Configuração explícita do Netlify Blobs. Necessário porque a detecção
+// automática de contexto (siteID/token) às vezes falha em produção,
+// causando MissingBlobsEnvironmentError. Exigimos as duas env vars aqui
+// para falhar de forma clara caso alguma esteja faltando.
+function getBlobsConfig() {
+  const siteID = process.env.NETLIFY_SITE_ID;
+  const token = process.env.NETLIFY_BLOBS_TOKEN;
+  if (!siteID || !token) {
+    throw new Error(
+      'NETLIFY_SITE_ID e NETLIFY_BLOBS_TOKEN precisam estar configurados nas variáveis de ambiente.'
+    );
+  }
+  return { siteID, token };
+}
+
 function usersStore() {
-  return getStore('users');
+  return getStore({ name: 'users', ...getBlobsConfig() });
 }
 
 function sessionsStore() {
-  return getStore('sessions');
+  return getStore({ name: 'sessions', ...getBlobsConfig() });
 }
 
 function referralsStore() {
-  return getStore('referrals');
+  return getStore({ name: 'referrals', ...getBlobsConfig() });
 }
 
 // user.id -> email. Preenchido sob demanda (lazy) sempre que o usuário
 // entra em algum fluxo de pagamento, já que a maioria das contas nunca
 // precisará ser encontrada pelo id (só o webhook do gateway usa isso).
 function userIndexStore() {
-  return getStore('user_index');
+  return getStore({ name: 'user_index', ...getBlobsConfig() });
 }
 
 // preapproval_id (Mercado Pago) -> { email, plan }. Criado no momento da
 // assinatura (mp-subscribe.js) pra o webhook (mp-webhook.js) conseguir
 // achar o usuário certo sem depender só do external_reference.
 function mpPreapprovalsStore() {
-  return getStore('mp_preapprovals');
+  return getStore({ name: 'mp_preapprovals', ...getBlobsConfig() });
 }
 
 // Planos pagos recorrentes (assinatura). Os valores em BRL espelham a
@@ -95,10 +110,10 @@ function ensureEngagementFields(user) {
   if (!Array.isArray(user.activity)) user.activity = [];
   if (!Array.isArray(user.favorites)) user.favorites = [];
   if (!Array.isArray(user.projects)) user.projects = [];
-  if (!('plan' in user)) user.plan = null;                 // 'pro' | 'business' | null
-  if (!('planStatus' in user)) user.planStatus = null;      // 'pending' | 'active' | 'paused' | 'canceled' | null
-  if (!('planProvider' in user)) user.planProvider = null;  // 'mercadopago' | 'stripe' | null
-  if (!('planCurrency' in user)) user.planCurrency = null;  // 'BRL' | 'USD' | null
+  if (!('plan' in user)) user.plan = null;
+  if (!('planStatus' in user)) user.planStatus = null;
+  if (!('planProvider' in user)) user.planProvider = null;
+  if (!('planCurrency' in user)) user.planCurrency = null;
   if (!('mpPreapprovalId' in user)) user.mpPreapprovalId = null;
   if (typeof user.streak !== 'number') user.streak = 0;
   if (!user.lastVisit) user.lastVisit = null;
