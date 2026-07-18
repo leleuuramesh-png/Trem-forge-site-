@@ -30,6 +30,7 @@ exports.handler = async (event) => {
   }
 
   const accessToken = process.env.MP_ACCESS_TOKEN;
+  console.log('[mp-subscribe] DEBUG token prefix:', accessToken ? accessToken.slice(0, 8) : 'UNDEFINED');
   if (!accessToken) {
     return json(500, { error: 'Mercado Pago ainda não configurado (falta MP_ACCESS_TOKEN no ambiente).' });
   }
