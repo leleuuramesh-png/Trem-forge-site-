@@ -115,5 +115,16 @@ exports.handler = async (event) => {
   await usersStore().setJSON(user.email, user);
 
   const { passwordHash, ...safeUser } = user;
-  return json(200, { ok: true, checkoutUrl, user: safeUser });
+  return json(200, {
+    ok: true,
+    checkoutUrl,
+    user: safeUser,
+    // DEBUG TEMPORÁRIO — remover depois de confirmar o ambiente correto.
+    _debug: {
+      tokenPrefix: accessToken.slice(0, 6),
+      isTestMode,
+      hasInitPoint: !!mpResponse.init_point,
+      hasSandboxInitPoint: !!mpResponse.sandbox_init_point,
+    },
+  });
 };
