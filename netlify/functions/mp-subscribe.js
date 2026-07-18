@@ -87,7 +87,14 @@ exports.handler = async (event) => {
   }
 
   const preapprovalId = mpResponse.id;
-  const checkoutUrl = mpResponse.init_point || mpResponse.sandbox_init_point;
+  // Se o access token for de teste (começa com "TEST-"), o Mercado Pago
+  // ainda devolve os dois links (init_point e sandbox_init_point), mas
+  // precisamos priorizar o de sandbox — senão o pagador cai no checkout
+  // de produção e cartões de teste são recusados.
+  const isTestMode = accessToken.startsWith('TEST-');
+  const checkoutUrl = isTestMode
+    ? (mpResponse.sandbox_init_point || mpResponse.init_point)
+    : (mpResponse.init_point || mpResponse.sandbox_init_point);
 
   // Guarda os dois índices que o webhook vai precisar: preapproval -> quem
   // é o usuário e qual plano, e id do usuário -> email (fallback).
