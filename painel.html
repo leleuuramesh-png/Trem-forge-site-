@@ -551,6 +551,8 @@
     })
       .then(function(r){ return r.json().then(function(d){ return {ok:r.ok, data:d}; }); })
       .then(function(res){
+        // DEBUG TEMPORÁRIO — remover depois de diagnosticar
+        alert('DEBUG mp-subscribe:\n' + JSON.stringify(res.data, null, 2));
         if (!res.ok || !res.data.checkoutUrl){
           notify('Não foi possível iniciar a assinatura', res.data.error || '', '⚠️');
           btn.disabled = false;
