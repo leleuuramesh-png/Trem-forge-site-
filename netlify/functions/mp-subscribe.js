@@ -24,6 +24,34 @@ const {
 
 const MP_API = 'https://api.mercadopago.com';
 
+// Traduz os erros mais comuns que o Mercado Pago devolve ao criar um
+// preapproval pra uma mensagem que faz sentido pro usuário final. O texto
+// técnico original sempre vai pro console.error — isso aqui é só pra tela.
+function friendlyMpError(mpResponse) {
+  const rawMessage = String((mpResponse && mpResponse.message) || '').toLowerCase();
+  const causes = (mpResponse && Array.isArray(mpResponse.cause)) ? mpResponse.cause : [];
+  const causeText = causes.map((c) => String(c.description || c.code || '')).join(' | ').toLowerCase();
+  const haystack = `${rawMessage} ${causeText}`;
+
+  if (haystack.includes('real or test users') || haystack.includes('same environment')) {
+    return 'Não foi possível iniciar a assinatura: há uma incompatibilidade entre conta de teste e conta real do Mercado Pago. Fale com o suporte.';
+  }
+  if (haystack.includes("can't pay yourself") || haystack.includes('cannot be the same') || haystack.includes('collector')) {
+    return 'Não é possível assinar usando o mesmo e-mail cadastrado como recebedor no Mercado Pago. Use outro e-mail de pagamento.';
+  }
+  if (haystack.includes('invalid') && haystack.includes('email')) {
+    return 'O e-mail cadastrado na sua conta não é válido para o Mercado Pago. Verifique seu e-mail no seu perfil.';
+  }
+  if (haystack.includes('transaction_amount') || haystack.includes('auto_recurring')) {
+    return 'Não foi possível configurar o valor da assinatura. Tente novamente em instantes ou fale com o suporte.';
+  }
+  if (haystack.includes('payer_email')) {
+    return 'Houve um problema com o e-mail usado para pagamento. Verifique seu e-mail no seu perfil e tente novamente.';
+  }
+
+  return 'Não foi possível iniciar sua assinatura no Mercado Pago agora. Tente novamente em instantes ou fale com o suporte.';
+}
+
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return json(405, { error: 'Method Not Allowed' });
@@ -79,7 +107,7 @@ exports.handler = async (event) => {
     mpResponse = await resp.json();
     if (!resp.ok) {
       console.error('Erro Mercado Pago (preapproval):', mpResponse);
-      return json(502, { error: mpResponse.message || 'Mercado Pago recusou a criação da assinatura.' });
+      return json(502, { error: friendlyMpError(mpResponse) });
     }
   } catch (err) {
     console.error('Falha ao chamar Mercado Pago:', err);
