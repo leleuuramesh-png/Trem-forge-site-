@@ -79,6 +79,43 @@ exports.handler = async (event) => {
   }
 
   const user = raw.user;
+
+  // Item 3: evita criar uma segunda preapproval em clique duplo ou nova
+  // tentativa enquanto já existe uma pro MESMO plano em andamento.
+  if (user.mpPreapprovalId && user.plan === planKey) {
+    if (user.planStatus === 'active') {
+      return json(409, { error: `Você já tem uma assinatura ativa do plano ${plan.label}.` });
+    }
+    if (user.planStatus === 'pending') {
+      try {
+        const checkResp = await fetch(`${MP_API}/preapproval/${user.mpPreapprovalId}`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        const existing = await checkResp.json();
+        if (checkResp.ok && existing.status === 'pending') {
+          // Já existe uma tentativa em aberto de verdade (confirmado no MP,
+          // não só no nosso registro local) — reaproveita o checkout dela
+          // em vez de criar outra preapproval concorrente.
+          const existingIsTestMode = accessToken.startsWith('TEST-');
+          const existingCheckoutUrl = existingIsTestMode
+            ? (existing.sandbox_init_point || existing.init_point)
+            : (existing.init_point || existing.sandbox_init_point);
+          const { passwordHash, ...safeUser } = user;
+          return json(200, {
+            ok: true,
+            checkoutUrl: existingCheckoutUrl,
+            user: safeUser,
+            reused: true,
+          });
+        }
+        // Se não está mais "pending" no MP (expirou, foi cancelada etc.),
+        // segue o fluxo normal e cria uma nova.
+      } catch (err) {
+        console.error('mp-subscribe: falha ao checar preapproval pendente existente, seguindo com criação normal:', err);
+      }
+    }
+  }
+
   const siteUrl = (process.env.SITE_URL || `https://${event.headers.host}`).replace(/\/$/, '');
 
   const payload = {
