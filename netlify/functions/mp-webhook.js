@@ -142,6 +142,23 @@ exports.handler = async (event) => {
   const user = await usersStore().get(email, { type: 'json' });
   if (!user) return json(200, { ok: true });
 
+  // Proteção contra notificação fora de ordem: se essa notificação é de uma
+  // preapproval DIFERENTE da que o usuário tem hoje, e essa preapproval foi
+  // criada antes da atual, é uma notificação atrasada de uma assinatura já
+  // superada (ex: tentativa cancelada antes de uma segunda bem-sucedida).
+  // Nesse caso, ignoramos — a preapproval mais nova é que deve mandar no status.
+  const incomingCreatedAt = preapproval.date_created ? new Date(preapproval.date_created).getTime() : 0;
+  const currentCreatedAt = user.mpPreapprovalCreatedAt || 0;
+  const isSamePreapproval = user.mpPreapprovalId === dataId;
+
+  if (!isSamePreapproval && user.mpPreapprovalId && incomingCreatedAt && incomingCreatedAt < currentCreatedAt) {
+    console.warn(
+      `mp-webhook: notificação da preapproval ${dataId} (criada ${preapproval.date_created}) ignorada — ` +
+      `usuário ${email} já está em ${user.mpPreapprovalId} (criada em timestamp mais recente).`
+    );
+    return json(200, { ok: true });
+  }
+
   const newStatus = STATUS_MAP[preapproval.status] || preapproval.status;
   const planLabel = (PLAN_CONFIG[planKey] && PLAN_CONFIG[planKey].label) || planKey || user.plan;
   const changed = user.planStatus !== newStatus;
@@ -151,6 +168,7 @@ exports.handler = async (event) => {
   user.planProvider = 'mercadopago';
   user.planCurrency = 'BRL';
   user.mpPreapprovalId = dataId;
+  user.mpPreapprovalCreatedAt = incomingCreatedAt || currentCreatedAt;
 
   if (changed) {
     const messages = {
