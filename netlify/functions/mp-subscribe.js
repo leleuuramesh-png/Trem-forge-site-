@@ -30,7 +30,6 @@ exports.handler = async (event) => {
   }
 
   const accessToken = process.env.MP_ACCESS_TOKEN;
-  console.log('[mp-subscribe] DEBUG token prefix:', accessToken ? accessToken.slice(0, 8) : 'UNDEFINED');
   if (!accessToken) {
     return json(500, { error: 'Mercado Pago ainda não configurado (falta MP_ACCESS_TOKEN no ambiente).' });
   }
@@ -116,12 +115,5 @@ exports.handler = async (event) => {
     ok: true,
     checkoutUrl,
     user: safeUser,
-    // DEBUG TEMPORÁRIO — remover depois de confirmar o ambiente correto.
-    _debug: {
-      tokenPrefix: accessToken.slice(0, 6),
-      isTestMode,
-      hasInitPoint: !!mpResponse.init_point,
-      hasSandboxInitPoint: !!mpResponse.sandbox_init_point,
-    },
   });
 };
