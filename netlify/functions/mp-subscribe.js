@@ -80,10 +80,13 @@ exports.handler = async (event) => {
 
   const user = raw.user;
 
+  console.log('mp-subscribe: pedido de assinatura —', user.email, '| plano solicitado =', planKey, '| status atual =', user.planStatus, '| preapproval atual =', user.mpPreapprovalId || 'nenhuma');
+
   // Item 3: evita criar uma segunda preapproval em clique duplo ou nova
   // tentativa enquanto já existe uma pro MESMO plano em andamento.
   if (user.mpPreapprovalId && user.plan === planKey) {
     if (user.planStatus === 'active') {
+      console.log('mp-subscribe: bloqueado — usuário', user.email, 'já tem assinatura ativa do plano', planKey);
       return json(409, { error: `Você já tem uma assinatura ativa do plano ${plan.label}.` });
     }
     if (user.planStatus === 'pending') {
@@ -101,6 +104,7 @@ exports.handler = async (event) => {
             ? (existing.sandbox_init_point || existing.init_point)
             : (existing.init_point || existing.sandbox_init_point);
           const { passwordHash, ...safeUser } = user;
+          console.log('mp-subscribe: preapproval pendente existente reaproveitada —', user.mpPreapprovalId, 'para', user.email);
           return json(200, {
             ok: true,
             checkoutUrl: existingCheckoutUrl,
@@ -133,6 +137,7 @@ exports.handler = async (event) => {
 
   let mpResponse;
   try {
+    console.log('mp-subscribe: criando preapproval no Mercado Pago —', plan.label, '| valor =', plan.priceBRL, '| payer_email =', user.email);
     const resp = await fetch(`${MP_API}/preapproval`, {
       method: 'POST',
       headers: {
@@ -146,6 +151,7 @@ exports.handler = async (event) => {
       console.error('Erro Mercado Pago (preapproval):', mpResponse);
       return json(502, { error: friendlyMpError(mpResponse) });
     }
+    console.log('mp-subscribe: preapproval criada com sucesso — id =', mpResponse.id, '| status =', mpResponse.status);
   } catch (err) {
     console.error('Falha ao chamar Mercado Pago:', err);
     return json(502, { error: 'Não foi possível falar com o Mercado Pago agora. Tente novamente.' });
@@ -174,6 +180,8 @@ exports.handler = async (event) => {
   addActivity(user, 'plan', `Assinatura do plano ${plan.label} iniciada — aguardando confirmação do pagamento.`);
 
   await usersStore().setJSON(user.email, user);
+
+  console.log('mp-subscribe: usuário', user.email, 'salvo com planStatus = pending | preapprovalId =', preapprovalId);
 
   const { passwordHash, ...safeUser } = user;
   return json(200, {
