@@ -1562,6 +1562,33 @@
   });
 
   // --- Rastreia cliques nos CTAs principais ---
+
+ // --- "Começar grátis": vai direto pro painel (ou login, se não houver sessão) ---
+  document.querySelectorAll('.btn-free-start').forEach(function (btn) {
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (btn.classList.contains('is-loading')) return;
+      btn.classList.add('is-loading');
+      var originalText = btn.textContent;
+      btn.textContent = 'Só um momento...';
+
+      fetch('/.netlify/functions/auth-me')
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.user) {
+            window.location.href = '/painel.html';
+          } else {
+            window.location.href = '/login.html?next=' + encodeURIComponent('/painel.html');
+          }
+        })
+        .catch(function () {
+          tfToast('Erro de conexão. Tente novamente.');
+          btn.classList.remove('is-loading');
+          btn.textContent = originalText;
+        });
+    });
+  });
+  
   var ctaSelectors = '.nav-cta, .btn-primary, .btn-outline, .plan-btn';
   document.addEventListener('click', function (e) {
     var el = e.target.closest(ctaSelectors);
