@@ -80,6 +80,8 @@ exports.handler = async (event) => {
     return json(200, { ok: true }); // evita retry infinito enquanto não configurar
   }
 
+  console.log('mp-webhook: notificação recebida.');
+
   let body = {};
   try {
     body = JSON.parse(event.body || '{}');
@@ -91,17 +93,25 @@ exports.handler = async (event) => {
   const dataId = String((body.data && body.data.id) || query['data.id'] || query.id || '').trim();
   const topic = String(body.type || body.topic || query.type || query.topic || '').trim();
 
-  if (!dataId) return json(200, { ok: true }); // notificação sem id útil, nada a fazer
+  console.log('mp-webhook: dataId =', dataId, '| topic =', topic);
+
+  if (!dataId) {
+    console.warn('mp-webhook: notificação sem data.id — ignorada.');
+    return json(200, { ok: true }); // notificação sem id útil, nada a fazer
+  }
 
   if (!verifySignature(event, dataId)) {
     console.error('mp-webhook: assinatura inválida, notificação descartada.');
     return json(401, { error: 'Assinatura inválida.' });
   }
 
+  console.log('mp-webhook: assinatura HMAC validada com sucesso.');
+
   // Por enquanto só tratamos notificações de assinatura (preapproval).
   // Notificações de "payment" (pagamentos avulsos) entram quando
   // mp-checkout.js existir.
   if (topic !== 'subscription_preapproval' && topic !== 'preapproval') {
+    console.log('mp-webhook: topic', topic, 'não tratado ainda — ignorado.');
     return json(200, { ok: true });
   }
 
@@ -120,6 +130,12 @@ exports.handler = async (event) => {
     return json(200, { ok: true });
   }
 
+  console.log(
+    'mp-webhook: preapproval encontrada — status =', preapproval.status,
+    '| external_reference =', preapproval.external_reference,
+    '| date_created =', preapproval.date_created
+  );
+
   // Descobre quem é o dono: primeiro pelo índice salvo em mp-subscribe.js,
   // com fallback pro external_reference (id do usuário) + índice de ids.
   let email = null;
@@ -128,10 +144,12 @@ exports.handler = async (event) => {
   if (stored) {
     email = stored.email;
     planKey = stored.plan;
+    console.log('mp-webhook: dono encontrado via índice mpPreapprovalsStore —', email, '| plano =', planKey);
   } else if (preapproval.external_reference) {
     email = await userIndexStore().get(preapproval.external_reference, { type: 'text' });
     const amount = preapproval.auto_recurring && preapproval.auto_recurring.transaction_amount;
     planKey = Object.keys(PLAN_CONFIG).find((k) => PLAN_CONFIG[k].priceBRL === amount) || null;
+    console.log('mp-webhook: dono encontrado via fallback external_reference —', email, '| plano =', planKey);
   }
 
   if (!email) {
@@ -140,7 +158,10 @@ exports.handler = async (event) => {
   }
 
   const user = await usersStore().get(email, { type: 'json' });
-  if (!user) return json(200, { ok: true });
+  if (!user) {
+    console.error('mp-webhook: usuário', email, 'não encontrado no usersStore.');
+    return json(200, { ok: true });
+  }
 
   // Proteção contra notificação fora de ordem: se essa notificação é de uma
   // preapproval DIFERENTE da que o usuário tem hoje, e essa preapproval foi
@@ -181,6 +202,11 @@ exports.handler = async (event) => {
   }
 
   await usersStore().setJSON(email, user);
+
+  console.log(
+    'mp-webhook: usuário', email, 'atualizado — planStatus =', newStatus,
+    '| mudou de status?', changed
+  );
 
   return json(200, { ok: true });
 };
