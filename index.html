@@ -134,6 +134,10 @@
   .nav-links{display:none; gap:28px; font-size:14px; color:var(--text-mute);}
   .nav-links a:hover{color:var(--text);}
   .nav-cta{font-size:13px; font-weight:600; padding:9px 16px; border-radius:9px; background:var(--primary-grad); color:#fff;}
+  .nav-auth-link{font-size:13px; font-weight:600; padding:9px 16px; border-radius:9px; background:transparent; border:1.5px solid rgba(255,255,255,.25); color:var(--text); transition:.25s;}
+.nav-auth-link:hover{filter:brightness(1.1); border-color:rgba(255,255,255,.4);}
+.nav-auth-link--active{background:#fff; color:#0a0a0f; border-color:#fff; box-shadow:0 4px 18px rgba(255,255,255,.35);}
+.nav-auth-link--active:hover{filter:brightness(1.05); box-shadow:0 8px 26px rgba(255,255,255,.5);}
   @media(min-width:760px){ .nav-links{display:flex;} }
 
   .nav-right{display:flex; align-items:center; gap:12px;}
