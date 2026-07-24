@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Entrar — Trem Forge</title>
+<meta name="robots" content="noindex, follow">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%2305070D'/%3E%3Cpath d='M20 65 L45 65 L45 35 L20 35 Z M55 65 L80 65 L80 35 L55 35 Z' fill='none' stroke='%23FF5A1F' stroke-width='6'/%3E%3Ccircle cx='30' cy='72' r='6' fill='%23FF5A1F'/%3E%3Ccircle cx='70' cy='72' r='6' fill='%23FF5A1F'/%3E%3Cpath d='M45 50 L55 50' stroke='%23FF9556' stroke-width='6'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0D0704; --card:#170E08; --line:#2E1D12;
+    --primary:#FF5A1F; --primary-light:#FFA366;
+    --text:#F3F4F6; --text-mute:#CBC0B4; --text-faint:#8C7C6E;
+    --primary-grad:linear-gradient(135deg, #E8460C, #FFB347);
+    --radius:22px; --shadow:0 20px 80px rgba(0,0,0,.45);
+    --danger:#F87171; --ok:#34D399;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg); color:var(--text); font-family:'Inter',system-ui,sans-serif;
+    min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:24px; position:relative; overflow-x:hidden;
+  }
+  a{color:inherit; text-decoration:none;}
+  h1,.display{font-family:'Geist','Inter',sans-serif; letter-spacing:-0.015em;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+
+  .glow-a{position:fixed; top:-10%; left:50%; translate:-50% 0; width:900px; height:600px; z-index:0;
+    background:radial-gradient(closest-side, rgba(255,90,31,0.22), transparent 70%); pointer-events:none;}
+  .glow-b{position:fixed; bottom:-10%; right:-10%; width:700px; height:700px; z-index:0;
+    background:radial-gradient(closest-side, rgba(255,140,60,0.14), transparent 70%); pointer-events:none;}
+
+  .top-brand{position:relative; z-index:1; display:flex; align-items:center; gap:10px; margin-bottom:36px;}
+  .top-brand .mark{width:32px; height:32px; border-radius:9px; background:#000; display:flex; align-items:center; justify-content:center; box-shadow:0 0 20px rgba(255,90,31,.4);}
+  .top-brand span{font-size:16px; font-weight:700; font-family:'Geist',sans-serif;}
+
+  .auth-card{
+    position:relative; z-index:1; width:100%; max-width:400px;
+    background:rgba(255,255,255,.05); backdrop-filter:blur(18px);
+    border:1px solid rgba(255,255,255,.08); border-radius:var(--radius);
+    box-shadow:var(--shadow); padding:32px 28px;
+  }
+  .tabs{display:flex; gap:6px; background:rgba(0,0,0,.25); border:1px solid var(--line); border-radius:12px; padding:4px; margin-bottom:26px;}
+  .tab{flex:1; text-align:center; padding:10px 0; border-radius:9px; font-size:13.5px; font-weight:600; color:var(--text-faint); cursor:pointer; transition:.2s; border:none; background:none; font-family:inherit;}
+  .tab.active{background:var(--primary-grad); color:#fff;}
+
+  h1.title{font-size:20px; margin-bottom:6px;}
+  .sub{color:var(--text-mute); font-size:13.5px; margin-bottom:22px; line-height:1.5;}
+
+  form{display:none; flex-direction:column; gap:14px;}
+  form.active{display:flex;}
+  label{font-size:12.5px; font-weight:600; color:var(--text-mute); margin-bottom:6px; display:block;}
+  input{
+    width:100%; background:rgba(0,0,0,.3); border:1px solid var(--line); border-radius:10px;
+    padding:12px 14px; color:var(--text); font-size:14.5px; font-family:inherit; transition:border-color .2s;
+  }
+  input:focus{outline:none; border-color:var(--primary);}
+  .field{display:flex; flex-direction:column;}
+
+  .btn-submit{
+    margin-top:6px; display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    background:var(--primary-grad); color:#fff; font-weight:700; font-size:14.5px;
+    padding:13px 20px; border-radius:12px; border:none; cursor:pointer;
+    box-shadow:0 12px 30px rgba(255,90,31,.35); transition:.25s; font-family:inherit;
+  }
+  .btn-submit:hover{transform:translateY(-2px); box-shadow:0 18px 40px rgba(255,90,31,.5);}
+  .btn-submit:disabled{opacity:.6; cursor:not-allowed; transform:none;}
+
+  .msg{font-size:13px; padding:10px 12px; border-radius:9px; display:none; line-height:1.5;}
+  .msg.error{display:block; background:rgba(248,113,113,.1); border:1px solid rgba(248,113,113,.3); color:var(--danger);}
+  .msg.ok{display:block; background:rgba(52,211,153,.1); border:1px solid rgba(52,211,153,.3); color:var(--ok);}
+
+  .foot-link{margin-top:20px; text-align:center; font-size:13px; color:var(--text-faint);}
+  .foot-link a{color:var(--primary-light); font-weight:600;}
+  .foot-link a:hover{text-decoration:underline;}
+
+  .back-home{position:relative; z-index:1; margin-top:22px; font-size:13px; color:var(--text-faint);}
+  .back-home:hover{color:var(--text-mute);}
+</style>
+</head>
+<body>
+
+<div class="glow-a"></div>
+<div class="glow-b"></div>
+
+<a href="/" class="top-brand">
+  <div class="mark">
+    <svg width="20" height="20" viewBox="0 0 100 100"><path d="M20 65 L45 65 L45 35 L20 35 Z M55 65 L80 65 L80 35 L55 35 Z" fill="none" stroke="#FF5A1F" stroke-width="7"/><circle cx="30" cy="72" r="6" fill="#FF5A1F"/><circle cx="70" cy="72" r="6" fill="#FF5A1F"/><path d="M45 50 L55 50" stroke="#FF9556" stroke-width="7"/></svg>
+  </div>
+  <span>Trem Forge</span>
+</a>
+
+<div class="auth-card">
+  <div class="tabs">
+    <button class="tab active" id="tabLogin" type="button">Entrar</button>
+    <button class="tab" id="tabSignup" type="button">Criar conta</button>
+  </div>
+
+  <div id="panelLogin">
+    <h1 class="title">Bem-vindo de volta</h1>
+    <p class="sub">Entre com seu e-mail e senha pra acessar sua conta.</p>
+    <div class="msg" id="loginMsg"></div>
+    <form id="loginForm" class="active" autocomplete="on">
+      <div class="field">
+        <label for="loginEmail">E-mail</label>
+        <input type="email" id="loginEmail" name="email" autocomplete="email" required>
+      </div>
+      <div class="field">
+        <label for="loginPassword">Senha</label>
+        <input type="password" id="loginPassword" name="password" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="btn-submit" id="loginBtn">Entrar</button>
+    </form>
+    <div class="foot-link" style="margin-top:14px;">
+      <a href="#" id="linkForgotPassword">Esqueceu a senha?</a>
+    </div>
+  </div>
+
+  <div id="panelForgot" style="display:none;">
+    <h1 class="title">Redefinir senha</h1>
+    <p class="sub" id="forgotSub">Informe seu e-mail e enviaremos um código de confirmação.</p>
+    <div class="msg" id="forgotMsg"></div>
+
+    <form id="forgotRequestForm" class="active" autocomplete="on">
+      <div class="field">
+        <label for="forgotEmail">E-mail</label>
+        <input type="email" id="forgotEmail" name="email" autocomplete="email" required>
+      </div>
+      <button type="submit" class="btn-submit" id="forgotRequestBtn">Enviar código</button>
+    </form>
+
+    <form id="forgotResetForm" style="display:none;" autocomplete="off">
+      <div class="field">
+        <label for="forgotCode">Código de confirmação</label>
+        <input type="text" id="forgotCode" name="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" required>
+      </div>
+      <div class="field">
+        <label for="forgotNewPassword">Nova senha</label>
+        <input type="password" id="forgotNewPassword" name="password" autocomplete="new-password" minlength="8" required>
+      </div>
+      <button type="submit" class="btn-submit" id="forgotResetBtn">Redefinir senha</button>
+    </form>
+
+    <div class="foot-link">
+      <a href="#" id="linkBackToLoginFromForgot">← Voltar para o login</a>
+    </div>
+  </div>
+
+  <div id="panelSignup" style="display:none;">
+    <h1 class="title">Criar sua conta</h1>
+    <p class="sub">Leva menos de um minuto. Sem cartão de crédito.</p>
+    <div class="msg" id="signupMsg"></div>
+    <form id="signupForm" class="active" autocomplete="on">
+      <div class="field">
+        <label for="signupName">Nome</label>
+        <input type="text" id="signupName" name="name" autocomplete="name" required>
+      </div>
+      <div class="field">
+        <label for="signupEmail">E-mail</label>
+        <input type="email" id="signupEmail" name="email" autocomplete="email" required>
+      </div>
+      <div class="field">
+        <label for="signupPassword">Senha</label>
+        <input type="password" id="signupPassword" name="password" autocomplete="new-password" minlength="8" required>
+      </div>
+      <button type="submit" class="btn-submit" id="signupBtn">Criar conta</button>
+    </form>
+  </div>
+
+  <div class="foot-link" id="footLogin">
+    Ainda não tem conta? <a href="#" id="linkToSignup">Criar conta</a>
+  </div>
+  <div class="foot-link" id="footSignup" style="display:none;">
+    Já tem conta? <a href="#" id="linkToLogin">Entrar</a>
+  </div>
+</div>
+
+<a href="/" class="back-home">← Voltar para a home</a>
+
+<script>
+(function(){
+  var tabLogin = document.getElementById('tabLogin');
+  var tabSignup = document.getElementById('tabSignup');
+  var panelLogin = document.getElementById('panelLogin');
+  var panelSignup = document.getElementById('panelSignup');
+  var panelForgot = document.getElementById('panelForgot');
+  var footLogin = document.getElementById('footLogin');
+  var footSignup = document.getElementById('footSignup');
+  var tabs = document.querySelector('.tabs');
+
+  function showLogin(){
+    tabLogin.classList.add('active'); tabSignup.classList.remove('active');
+    panelLogin.style.display = ''; panelSignup.style.display = 'none'; panelForgot.style.display = 'none';
+    footLogin.style.display = ''; footSignup.style.display = 'none';
+    tabs.style.display = '';
+  }
+  function showSignup(){
+    tabSignup.classList.add('active'); tabLogin.classList.remove('active');
+    panelSignup.style.display = ''; panelLogin.style.display = 'none'; panelForgot.style.display = 'none';
+    footSignup.style.display = ''; footLogin.style.display = 'none';
+    tabs.style.display = '';
+  }
+  function showForgot(){
+    panelForgot.style.display = ''; panelLogin.style.display = 'none'; panelSignup.style.display = 'none';
+    footLogin.style.display = 'none'; footSignup.style.display = 'none';
+    tabs.style.display = 'none';
+    // sempre volta pro passo 1 (pedir e-mail) ao entrar na tela
+    document.getElementById('forgotRequestForm').style.display = '';
+    document.getElementById('forgotResetForm').style.display = 'none';
+    document.getElementById('forgotSub').textContent = 'Informe seu e-mail e enviaremos um código de confirmação.';
+    setMsg(document.getElementById('forgotMsg'), '', '');
+  }
+  tabLogin.addEventListener('click', showLogin);
+  tabSignup.addEventListener('click', showSignup);
+  document.getElementById('linkToSignup').addEventListener('click', function(e){ e.preventDefault(); showSignup(); });
+  document.getElementById('linkToLogin').addEventListener('click', function(e){ e.preventDefault(); showLogin(); });
+  document.getElementById('linkForgotPassword').addEventListener('click', function(e){ e.preventDefault(); showForgot(); });
+  document.getElementById('linkBackToLoginFromForgot').addEventListener('click', function(e){ e.preventDefault(); showLogin(); });
+
+  // Se veio ?next=..., redireciona pra lá depois do login. Senão, vai pro painel.
+  var params = new URLSearchParams(window.location.search);
+  var next = params.get('next') || '/painel.html';
+  var refCode = params.get('ref') || '';
+  if (refCode) {
+    showSignup();
+    var refNote = document.createElement('p');
+    refNote.className = 'sub';
+    refNote.style.marginTop = '-14px';
+    refNote.style.color = 'var(--primary-light)';
+    refNote.textContent = 'Você foi indicado por um amigo — crie sua conta e ganhe créditos de bônus.';
+    document.getElementById('panelSignup').insertBefore(refNote, document.getElementById('signupMsg'));
+  }
+
+  function setMsg(el, text, kind){
+    el.textContent = text;
+    el.className = 'msg ' + (kind || '');
+  }
+
+  document.getElementById('loginForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var msg = document.getElementById('loginMsg');
+    var btn = document.getElementById('loginBtn');
+    setMsg(msg, '', '');
+    btn.disabled = true; btn.textContent = 'Entrando...';
+
+    fetch('/.netlify/functions/auth-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: document.getElementById('loginEmail').value,
+        password: document.getElementById('loginPassword').value,
+      }),
+    })
+      .then(function(r){ return r.json().then(function(data){ return { ok: r.ok, data: data }; }); })
+      .then(function(res){
+        if (!res.ok) { setMsg(msg, res.data.error || 'Não foi possível entrar.', 'error'); return; }
+        setMsg(msg, 'Login realizado! Redirecionando...', 'ok');
+        setTimeout(function(){ window.location.href = next; }, 500);
+      })
+      .catch(function(){ setMsg(msg, 'Erro de conexão. Tente novamente.', 'error'); })
+      .finally(function(){ btn.disabled = false; btn.textContent = 'Entrar'; });
+  });
+
+  document.getElementById('signupForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var msg = document.getElementById('signupMsg');
+    var btn = document.getElementById('signupBtn');
+    setMsg(msg, '', '');
+    btn.disabled = true; btn.textContent = 'Criando conta...';
+
+    fetch('/.netlify/functions/auth-signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: document.getElementById('signupName').value,
+        email: document.getElementById('signupEmail').value,
+        password: document.getElementById('signupPassword').value,
+        ref: refCode,
+      }),
+    })
+      .then(function(r){ return r.json().then(function(data){ return { ok: r.ok, data: data }; }); })
+      .then(function(res){
+        if (!res.ok) { setMsg(msg, res.data.error || 'Não foi possível criar a conta.', 'error'); return; }
+        setMsg(msg, 'Conta criada! Redirecionando...', 'ok');
+        setTimeout(function(){ window.location.href = next; }, 500);
+      })
+      .catch(function(){ setMsg(msg, 'Erro de conexão. Tente novamente.', 'error'); })
+      .finally(function(){ btn.disabled = false; btn.textContent = 'Criar conta'; });
+  });
+
+  document.getElementById('forgotRequestForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var msg = document.getElementById('forgotMsg');
+    var btn = document.getElementById('forgotRequestBtn');
+    var email = document.getElementById('forgotEmail').value;
+    setMsg(msg, '', '');
+    btn.disabled = true; btn.textContent = 'Enviando...';
+
+    fetch('/.netlify/functions/auth-forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email }),
+    })
+      .then(function(r){ return r.json().then(function(data){ return { ok: r.ok, data: data }; }); })
+      .then(function(res){
+        if (!res.ok) { setMsg(msg, res.data.error || 'Não foi possível enviar o código.', 'error'); return; }
+        // A resposta é sempre genérica (não revela se o e-mail existe),
+        // então sempre avançamos pro passo 2 depois de um 200.
+        document.getElementById('forgotRequestForm').style.display = 'none';
+        document.getElementById('forgotResetForm').style.display = 'flex';
+        document.getElementById('forgotSub').textContent = 'Enviamos um código de 6 dígitos para ' + email + '. Confira sua caixa de entrada (e o spam).';
+        setMsg(msg, '', '');
+      })
+      .catch(function(){ setMsg(msg, 'Erro de conexão. Tente novamente.', 'error'); })
+      .finally(function(){ btn.disabled = false; btn.textContent = 'Enviar código'; });
+  });
+
+  document.getElementById('forgotResetForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var msg = document.getElementById('forgotMsg');
+    var btn = document.getElementById('forgotResetBtn');
+    setMsg(msg, '', '');
+    btn.disabled = true; btn.textContent = 'Redefinindo...';
+
+    fetch('/.netlify/functions/auth-reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: document.getElementById('forgotEmail').value,
+        code: document.getElementById('forgotCode').value,
+        password: document.getElementById('forgotNewPassword').value,
+      }),
+    })
+      .then(function(r){ return r.json().then(function(data){ return { ok: r.ok, data: data }; }); })
+      .then(function(res){
+        if (!res.ok) { setMsg(msg, res.data.error || 'Não foi possível redefinir a senha.', 'error'); return; }
+        setMsg(msg, res.data.message || 'Senha redefinida com sucesso!', 'ok');
+        setTimeout(function(){
+          document.getElementById('loginEmail').value = document.getElementById('forgotEmail').value;
+          showLogin();
+        }, 1200);
+      })
+      .catch(function(){ setMsg(msg, 'Erro de conexão. Tente novamente.', 'error'); })
+      .finally(function(){ btn.disabled = false; btn.textContent = 'Redefinir senha'; });
+  });
+})();
+</script>
+
+</body>
+</html>
