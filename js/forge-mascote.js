@@ -86,3 +86,20 @@ if (typeof module !== "undefined") {
 } else {
   window.ForgeMascote = ForgeMascote;
 }
+/** Liga o botão de play customizado a um <video> (necessário pro áudio funcionar, já que autoplay com som é bloqueado) */
+function iniciarForgeVideoPlayer(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const video = container.querySelector("video");
+  const btn = container.querySelector(".forge-video-play-btn");
+
+  btn.addEventListener("click", () => {
+    video.play();
+    btn.classList.add("oculto");
+    video.setAttribute("controls", "true");
+  });
+
+  video.addEventListener("pause", () => {
+    btn.classList.remove("oculto");
+  });
+}
