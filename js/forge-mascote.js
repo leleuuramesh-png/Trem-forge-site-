@@ -15,6 +15,7 @@ class ForgeMascote {
 
     // Mapa de estado -> caminho da imagem (ajustar conforme sua estrutura de pastas)
     this.mapa = {
+      celebracao: `${basePath}/forge-animado-transparente-v2.webp`,
       // Expressões base
       feliz: `${basePath}/forge-feliz.png`,
       determinado: `${basePath}/forge-determinado.png`,
