@@ -1,0 +1,58 @@
+/* ==========================================================
+   Forge Mascote — Animações e estilos base
+   Trem Forge — usar junto com forge-mascote.js
+   ========================================================== */
+
+.forge-mascote {
+  width: 180px;
+  height: auto;
+  pointer-events: none; /* não bloqueia cliques no que está por baixo */
+  transition: opacity 0.2s ease;
+}
+
+/* Flutuação suave — usar em mascotes "parados" na tela (ex: chat, sidebar) */
+.forge-float {
+  animation: forge-float 3s ease-in-out infinite;
+}
+@keyframes forge-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-12px); }
+}
+
+/* Entrada — quando o Forge aparece na tela (onboarding, modal, notificação) */
+.forge-entrando {
+  animation: forge-entrada 0.6s ease-out;
+}
+@keyframes forge-entrada {
+  from { opacity: 0; transform: translateY(20px) scale(0.9); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Saída — quando o Forge sai de cena (fechar notificação, trocar tela) */
+.forge-saindo {
+  animation: forge-saida 0.4s ease-in forwards;
+}
+@keyframes forge-saida {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to   { opacity: 0; transform: translateY(-10px) scale(0.9); }
+}
+
+/* Pulso leve — para chamar atenção (ex: nova notificação, dica) */
+.forge-pulso {
+  animation: forge-pulso 1.4s ease-in-out infinite;
+}
+@keyframes forge-pulso {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.06); }
+}
+
+/* Tamanhos utilitários */
+.forge-sm { width: 80px; }
+.forge-md { width: 180px; }
+.forge-lg { width: 320px; }
+
+/* Container do vídeo/webp animado (celebração, conquistas) */
+.forge-celebracao {
+  width: 280px;
+  pointer-events: none;
+}
