@@ -56,3 +56,45 @@
   width: 280px;
   pointer-events: none;
 }
+/* ===== Player de vídeo com áudio (ex: Sobre Nós, boas-vindas) ===== */
+.forge-video-container {
+  position: relative;
+  max-width: 480px;
+  margin: 0 auto;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  background: #1A1A1A;
+}
+
+.forge-video-container video {
+  width: 100%;
+  display: block;
+}
+
+.forge-video-play-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #FF5A1F;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  transition: transform 0.2s ease;
+}
+.forge-video-play-btn:hover { transform: translate(-50%, -50%) scale(1.08); }
+.forge-video-play-btn::after {
+  content: "";
+  border-style: solid;
+  border-width: 12px 0 12px 20px;
+  border-color: transparent transparent transparent white;
+  margin-left: 4px;
+}
+.forge-video-play-btn.oculto { display: none; }
