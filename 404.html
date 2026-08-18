@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Página não encontrada — Trem Forge</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0D0704;
+    --card:#170E08;
+    --line:#2E1D12;
+    --primary:#FF5A1F;
+    --primary-light:#FF8A3D;
+    --text:#F3F4F6;
+    --text-mute:#F5F2ED;
+    --text-faint:#a89b8f;
+    --primary-grad:linear-gradient(135deg, #E8460C, #FFB347);
+    --radius:22px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:'Inter', system-ui, sans-serif;
+    min-height:100vh; min-height:100dvh;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    overflow-x:hidden; position:relative;
+    padding:24px;
+  }
+  h1,h2,.display{font-family:'Geist','Inter',sans-serif; letter-spacing:-0.015em;}
+  .mono{font-family:'JetBrains Mono', monospace;}
+  a{color:inherit; text-decoration:none;}
+  img{display:block;}
+
+  /* fundo com o mesmo clima do site */
+  .glow-a{
+    position:fixed; top:-10%; left:-10%; width:60vw; height:60vw; max-width:600px; max-height:600px;
+    background:radial-gradient(circle, rgba(255,90,31,.18), transparent 70%);
+    filter:blur(40px); pointer-events:none; z-index:0;
+  }
+  .glow-b{
+    position:fixed; bottom:-15%; right:-10%; width:55vw; height:55vw; max-width:560px; max-height:560px;
+    background:radial-gradient(circle, rgba(139,92,246,.14), transparent 70%);
+    filter:blur(40px); pointer-events:none; z-index:0;
+  }
+
+  .wrap{
+    position:relative; z-index:1;
+    max-width:460px; width:100%;
+    text-align:center;
+  }
+
+  .code{
+    font-family:'JetBrains Mono', monospace;
+    font-size:14px; font-weight:600; letter-spacing:.08em;
+    color:var(--primary-light);
+    background:rgba(255,90,31,.1); border:1px solid rgba(255,90,31,.3);
+    display:inline-block; padding:6px 14px; border-radius:100px;
+    margin-bottom:28px;
+  }
+
+  /* ---------- MASCOTE EM MODO DE ERRO ---------- */
+  #forge-error-wrap{
+    width:150px; margin:0 auto 24px;
+    filter:drop-shadow(0 10px 30px rgba(255,90,31,.35));
+    animation:forge-shake-loop 3.2s ease-in-out infinite;
+  }
+  #forge-error-wrap img{
+    width:100%; height:auto;
+    opacity:0; animation:forge-fade-in .5s ease forwards .15s;
+  }
+  @keyframes forge-fade-in{ to{ opacity:1; } }
+  @keyframes forge-shake-loop{
+    0%, 88%, 100%{ transform:translateX(0) rotate(0deg); }
+    90%{ transform:translateX(-5px) rotate(-2deg); }
+    92%{ transform:translateX(4px) rotate(2deg); }
+    94%{ transform:translateX(-4px) rotate(-1.5deg); }
+    96%{ transform:translateX(3px) rotate(1.5deg); }
+    98%{ transform:translateX(0) rotate(0deg); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    #forge-error-wrap{ animation:none; }
+    #forge-error-wrap img{ animation:forge-fade-in .3s ease forwards; }
+  }
+
+  #forge-speech{
+    background:var(--card); border:1px solid var(--primary); color:var(--text);
+    padding:10px 18px; border-radius:14px; font-size:13.5px;
+    display:inline-block; margin:0 auto 32px; position:relative;
+  }
+  #forge-speech::after{
+    content:""; position:absolute; top:-8px; left:50%; transform:translateX(-50%);
+    border-width:0 8px 8px 8px; border-style:solid;
+    border-color:transparent transparent var(--primary) transparent;
+  }
+
+  h1.display{
+    font-size:26px; font-weight:700; margin-bottom:10px;
+  }
+  p.sub{
+    color:var(--text-faint); font-size:14.5px; line-height:1.6;
+    margin-bottom:34px;
+  }
+
+  .actions{
+    display:flex; flex-direction:column; gap:12px; align-items:center;
+  }
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    font-weight:600; border-radius:12px; transition:transform .15s, box-shadow .15s;
+    width:100%; max-width:260px; padding:14px 26px; font-size:14.5px;
+  }
+  .btn:active{ transform:scale(0.97); }
+  .btn-primary{
+    background:var(--primary-grad); color:#fff;
+    box-shadow:0 10px 30px rgba(255,90,31,0.3);
+  }
+  .btn-primary:hover{ box-shadow:0 14px 38px rgba(255,90,31,0.45); }
+  .btn-secondary{
+    background:transparent; border:1px solid var(--line); color:var(--text-mute);
+  }
+  .btn-secondary:hover{ border-color:var(--primary); color:var(--text); }
+
+  footer{
+    position:relative; z-index:1;
+    margin-top:40px; text-align:center; color:var(--text-faint);
+    font-size:11.5px; font-family:'JetBrains Mono',monospace;
+  }
+</style>
+</head>
+<body>
+
+<div class="glow-a"></div>
+<div class="glow-b"></div>
+
+<div class="wrap">
+  <span class="code mono">ERRO 404</span>
+
+  <div id="forge-error-wrap">
+    <img src="images/forge/forge-erro.png" alt="Forge, o robô mascote do Trem Forge, em modo de erro">
+  </div>
+
+  <div id="forge-speech">Ops! Pegamos um desvio nos trilhos.</div>
+
+  <h1 class="display">Essa página saiu dos trilhos</h1>
+  <p class="sub">A página que você procura não existe ou foi movida. Mas não se preocupe — a estação principal continua funcionando normalmente.</p>
+
+  <div class="actions">
+    <a href="/" class="btn btn-primary">Voltar para o início</a>
+    <a href="/painel.html" class="btn btn-secondary">Ir para o painel</a>
+  </div>
+</div>
+
+<footer>trem forge · plataforma de dev tools com IA</footer>
+
+</body>
+</html>
