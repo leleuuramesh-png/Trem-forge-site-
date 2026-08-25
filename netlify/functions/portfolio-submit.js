@@ -19,7 +19,7 @@
 // Este endpoint é PÚBLICO de propósito (qualquer cliente que preenche o
 // formulário de orçamento precisa conseguir chamar, sem senha).
 
-const { getStore } = require('@netlify/blobs');
+const { getStore } = require('./_lib/netlify-blobs-shim');
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
