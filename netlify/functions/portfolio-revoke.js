@@ -5,7 +5,7 @@
 //
 // POST body esperado: { "id": "proj_2026_07_16_abc123" }
 
-const { getStore } = require('@netlify/blobs');
+const { getStore } = require('./_lib/netlify-blobs-shim');
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
