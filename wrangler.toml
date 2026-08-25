@@ -1,0 +1,17 @@
+name = "trem-forge"
+pages_build_output_dir = "."
+
+# nodejs_compat habilita node:crypto (scrypt, randomBytes, timingSafeEqual,
+# createHash — tudo que auth.js usa), Buffer e process.env dentro dos
+# Pages Functions. Em compatibility_date recentes essa flag já vem
+# habilitada por padrão, mas deixamos explícita por clareza/segurança.
+compatibility_date = "2026-08-01"
+compatibility_flags = ["nodejs_compat"]
+
+# KV que substitui o @netlify/blobs. Crie o namespace com:
+#   wrangler kv namespace create TF_KV
+# e cole o "id" retornado abaixo (ou configure pelo dashboard em
+# Pages > trem-forge > Settings > Functions > KV namespace bindings).
+[[kv_namespaces]]
+binding = "TF_KV"
+id = "6d3a363902194b0db2043e67af82285c"
