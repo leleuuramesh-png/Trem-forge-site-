@@ -1,11 +1,14 @@
 {
   "name": "trem-forge-site",
   "private": true,
-  "description": "Site estático da Trem Forge, com a Netlify Function /.netlify/functions/chat integrando a API da Anthropic.",
+  "description": "Site estático da Trem Forge (Cloudflare Pages), com Pages Functions em /api/* integrando Anthropic, Mercado Pago e Stripe. Armazenamento em Workers KV (ver netlify/functions/_lib/netlify-blobs-shim.js).",
   "engines": {
     "node": ">=18"
   },
+  "devDependencies": {
+    "wrangler": "^3.90.0"
+  },
   "dependencies": {
-    "@netlify/blobs": "^8.1.0"
+    "stripe": "^17.4.0"
   }
 }
