@@ -5,7 +5,7 @@
 // A senha correta fica configurada como variável de ambiente
 // no Netlify: Site settings -> Environment variables -> ADMIN_PASSWORD
 
-const { getStore } = require('@netlify/blobs');
+const { getStore } = require('./_lib/netlify-blobs-shim');
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'GET') {
