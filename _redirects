@@ -1,0 +1,4 @@
+# Mantém compatibilidade com todo o front-end existente, que chama
+# /.netlify/functions/<nome> — reescreve (200, transparente pro browser)
+# para o catch-all em functions/api/[[route]].js.
+/.netlify/functions/*  /api/:splat  200
