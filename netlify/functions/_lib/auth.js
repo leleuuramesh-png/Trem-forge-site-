@@ -13,7 +13,7 @@
 // Senhas: hash com scrypt (nativo do Node, sem dependência extra).
 
 const crypto = require('crypto');
-const { getStore } = require('@netlify/blobs');
+const { getStore } = require('./netlify-blobs-shim');
 
 const SESSION_COOKIE = 'tf_session';
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 dias
@@ -22,15 +22,14 @@ const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 dias
 // automática de contexto (siteID/token) às vezes falha em produção,
 // causando MissingBlobsEnvironmentError. Exigimos as duas env vars aqui
 // para falhar de forma clara caso alguma esteja faltando.
+// Migrado para Cloudflare Workers KV (netlify-blobs-shim.js) — o KV
+// namespace já vem "amarrado" via binding (wrangler.toml) e é injetado
+// pelo adaptador (functions/api/[[route]].js) a cada request, então não
+// precisa mais de siteID/token. Mantido como no-op (em vez de remover
+// os `...getBlobsConfig()` espalhados pelas funções abaixo) pra manter
+// o resto do arquivo intacto.
 function getBlobsConfig() {
-  const siteID = process.env.NETLIFY_SITE_ID;
-  const token = process.env.NETLIFY_BLOBS_TOKEN;
-  if (!siteID || !token) {
-    throw new Error(
-      'NETLIFY_SITE_ID e NETLIFY_BLOBS_TOKEN precisam estar configurados nas variáveis de ambiente.'
-    );
-  }
-  return { siteID, token };
+  return {};
 }
 
 function usersStore() {
@@ -57,6 +56,25 @@ function userIndexStore() {
 // achar o usuário certo sem depender só do external_reference.
 function mpPreapprovalsStore() {
   return getStore({ name: 'mp_preapprovals', ...getBlobsConfig() });
+}
+
+// purchaseId (gerado por mp-checkout.js, vai como external_reference na
+// preference) -> { email, package, coins, credited }. Igual em espírito
+// ao mpPreapprovalsStore, mas para compra avulsa (pagamento único, não
+// recorrente). "credited" evita creditar duas vezes se o Mercado Pago
+// reenviar a mesma notificação de pagamento (retry de webhook).
+function mpCheckoutsStore() {
+  return getStore({ name: 'mp_checkouts', ...getBlobsConfig() });
+}
+
+// stripeCustomerId -> email. Criado em stripe-subscribe.js na primeira
+// vez que um usuário assina via Stripe (o Customer é reaproveitado nas
+// próximas tentativas/planos). stripe-webhook.js usa esse índice pra
+// achar o dono da assinatura a partir dos eventos, que só trazem o
+// customer id, nunca o e-mail direto de forma confiável em todos os tipos
+// de evento.
+function stripeCustomersStore() {
+  return getStore({ name: 'stripe_customers', ...getBlobsConfig() });
 }
 
 // email (minúsculas) -> { codeHash, expiresAt, attempts }. Código de
@@ -217,10 +235,35 @@ async function destroyPendingLogin(pendingToken) {
 
 
 // Planos pagos recorrentes (assinatura). Os valores em BRL espelham a
-// seção #planos do index-2.html — mudou lá, muda aqui também.
+// seção #planos do index.html — mudou lá, muda aqui também. priceUSD é
+// cobrado via Stripe (stripe-subscribe.js).
 const PLAN_CONFIG = {
-  pro: { label: 'Pro', priceBRL: 49 },
-  business: { label: 'Business', priceBRL: 199 },
+  pro: { label: 'Pro', priceBRL: 49, priceUSD: 9 },
+  business: { label: 'Business', priceBRL: 199, priceUSD: 39 },
+};
+
+// IDs dos Price cadastrados no Dashboard da Stripe (Products > Pricing),
+// lidos de env vars em vez de hardcoded pra não misturar id de ambiente
+// de teste com o de produção no código. Função (não objeto estático)
+// porque process.env só está totalmente populado em runtime.
+function getStripePriceId(planKey) {
+  const map = {
+    pro: process.env.STRIPE_PRICE_PRO,
+    business: process.env.STRIPE_PRICE_BUSINESS,
+  };
+  return map[planKey] || null;
+}
+
+// Pacotes de créditos avulsos (compra única via checkout.html + mp-checkout.js).
+// "coins" é a quantidade creditada em user.coinsBalance quando o pagamento
+// é aprovado (mp-webhook.js, topic "payment"). Mudou o preço/quantidade
+// aqui, mudou em checkout.html também (os cards são montados a partir
+// desse mesmo objeto, exposto em checkout.html via um <script> próprio
+// pra evitar ir e voltar numa function só pra listar os pacotes).
+const COIN_PACKAGES = {
+  starter: { label: 'Starter', coins: 100, priceBRL: 19 },
+  popular: { label: 'Popular', coins: 300, priceBRL: 49 },
+  power: { label: 'Power', coins: 700, priceBRL: 99 },
 };
 
 function normalizeEmail(email) {
@@ -298,6 +341,8 @@ function ensureEngagementFields(user) {
   if (!('planProvider' in user)) user.planProvider = null;
   if (!('planCurrency' in user)) user.planCurrency = null;
   if (!('mpPreapprovalId' in user)) user.mpPreapprovalId = null;
+  if (!('stripeCustomerId' in user)) user.stripeCustomerId = null;
+  if (!('stripeSubscriptionId' in user)) user.stripeSubscriptionId = null;
   if (typeof user.streak !== 'number') user.streak = 0;
   if (!user.lastVisit) user.lastVisit = null;
   if (!user.referralCode) user.referralCode = generateReferralCode(user.id || user.email);
@@ -500,6 +545,8 @@ module.exports = {
   referralsStore,
   userIndexStore,
   mpPreapprovalsStore,
+  mpCheckoutsStore,
+  stripeCustomersStore,
   passwordResetsStore,
   twoFactorStore,
   pendingLoginsStore,
@@ -511,6 +558,8 @@ module.exports = {
   resolvePendingLogin,
   destroyPendingLogin,
   PLAN_CONFIG,
+  getStripePriceId,
+  COIN_PACKAGES,
   normalizeEmail,
   normalizePhone,
   isValidPhone,
