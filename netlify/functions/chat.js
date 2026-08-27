@@ -119,7 +119,7 @@ exports.handler = async function (event) {
       return {
         statusCode: 502,
         headers,
-        body: JSON.stringify({ error: 'Não foi possível falar com a IA agora. Tente novamente.' }),
+        body: JSON.stringify({ error: 'DEBUG: ' + JSON.stringify(data) }),
       };
     }
 
@@ -139,7 +139,7 @@ exports.handler = async function (event) {
     return {
       statusCode: 502,
       headers,
-      body: JSON.stringify({ error: 'Erro de conexão com a IA. Tente novamente.' }),
+      body: JSON.stringify({ error: 'DEBUG (catch): ' + (err && err.message ? err.message : String(err)) }),
     };
   }
 };
