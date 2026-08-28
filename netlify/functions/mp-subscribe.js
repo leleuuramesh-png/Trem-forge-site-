@@ -149,9 +149,13 @@ console.log('mp-subscribe: DEBUG token — prefixo =', accessToken.slice(0, 12),
     });
     mpResponse = await resp.json();
     if (!resp.ok) {
-      console.error('Erro Mercado Pago (preapproval):', mpResponse);
-      return json(502, { error: 'DEBUG: ' + JSON.stringify(mpResponse) });
-    }
+    console.error('Erro Mercado Pago (preapproval):', mpResponse);
+    return json(502, {
+      error: 'DEBUG: ' + JSON.stringify(mpResponse) +
+        ' | tokenPrefix=' + accessToken.slice(0, 12) +
+        ' | tokenLen=' + accessToken.length,
+    });
+  }
     console.log('mp-subscribe: preapproval criada com sucesso — id =', mpResponse.id, '| status =', mpResponse.status);
   } catch (err) {
     console.error('Falha ao chamar Mercado Pago:', err);
