@@ -1,0 +1,192 @@
+// netlify/functions/mp-subscribe.js
+//
+// POST /.netlify/functions/mp-subscribe
+// Body JSON: { "plan": "pro" | "business" }
+//
+// Cria uma assinatura recorrente (Preapproval) no Mercado Pago pro
+// usuário logado e devolve a URL de checkout (init_point) pra ele
+// entrar com o cartão e autorizar a cobrança mensal automática.
+//
+// A assinatura fica "pending" até o Mercado Pago confirmar via webhook
+// (mp-webhook.js) que o pagador autorizou — é lá que o status vira
+// "active" de verdade. Documentação: POST /preapproval (assinatura sem
+// plano associado, com pagamento pendente).
+
+const {
+  usersStore,
+  userIndexStore,
+  mpPreapprovalsStore,
+  getRawSessionUser,
+  addActivity,
+  json,
+  PLAN_CONFIG,
+} = require('./_lib/auth');
+
+const MP_API = 'https://api.mercadopago.com';
+
+// Traduz os erros mais comuns que o Mercado Pago devolve ao criar um
+// preapproval pra uma mensagem que faz sentido pro usuário final. O texto
+// técnico original sempre vai pro console.error — isso aqui é só pra tela.
+function friendlyMpError(mpResponse) {
+  const rawMessage = String((mpResponse && mpResponse.message) || '').toLowerCase();
+  const causes = (mpResponse && Array.isArray(mpResponse.cause)) ? mpResponse.cause : [];
+  const causeText = causes.map((c) => String(c.description || c.code || '')).join(' | ').toLowerCase();
+  const haystack = `${rawMessage} ${causeText}`;
+
+  if (haystack.includes('real or test users') || haystack.includes('same environment')) {
+    return 'Não foi possível iniciar a assinatura: há uma incompatibilidade entre conta de teste e conta real do Mercado Pago. Fale com o suporte.';
+  }
+  if (haystack.includes("can't pay yourself") || haystack.includes('cannot be the same') || haystack.includes('collector')) {
+    return 'Não é possível assinar usando o mesmo e-mail cadastrado como recebedor no Mercado Pago. Use outro e-mail de pagamento.';
+  }
+  if (haystack.includes('invalid') && haystack.includes('email')) {
+    return 'O e-mail cadastrado na sua conta não é válido para o Mercado Pago. Verifique seu e-mail no seu perfil.';
+  }
+  if (haystack.includes('transaction_amount') || haystack.includes('auto_recurring')) {
+    return 'Não foi possível configurar o valor da assinatura. Tente novamente em instantes ou fale com o suporte.';
+  }
+  if (haystack.includes('payer_email')) {
+    return 'Houve um problema com o e-mail usado para pagamento. Verifique seu e-mail no seu perfil e tente novamente.';
+  }
+
+  return 'Não foi possível iniciar sua assinatura no Mercado Pago agora. Tente novamente em instantes ou fale com o suporte.';
+}
+
+exports.handler = async (event) => {
+  if (event.httpMethod !== 'POST') {
+    return json(405, { error: 'Method Not Allowed' });
+  }
+
+  const accessToken = process.env.MP_ACCESS_TOKEN;
+  if (!accessToken) {
+    return json(500, { error: 'Mercado Pago ainda não configurado (falta MP_ACCESS_TOKEN no ambiente).' });
+  }
+
+  const raw = await getRawSessionUser(event);
+  if (!raw) return json(401, { error: 'Não autenticado.' });
+
+  let data;
+  try {
+    data = JSON.parse(event.body || '{}');
+  } catch (err) {
+    return json(400, { error: 'JSON inválido' });
+  }
+
+  const planKey = String(data.plan || '').trim();
+  const plan = PLAN_CONFIG[planKey];
+  if (!plan) {
+    return json(400, { error: 'Plano inválido. Use "pro" ou "business".' });
+  }
+
+  const user = raw.user;
+
+  console.log('mp-subscribe: pedido de assinatura —', user.email, '| plano solicitado =', planKey, '| status atual =', user.planStatus, '| preapproval atual =', user.mpPreapprovalId || 'nenhuma');
+
+  // Item 3: evita criar uma segunda preapproval em clique duplo ou nova
+  // tentativa enquanto já existe uma pro MESMO plano em andamento.
+  if (user.mpPreapprovalId && user.plan === planKey) {
+    if (user.planStatus === 'active') {
+      console.log('mp-subscribe: bloqueado — usuário', user.email, 'já tem assinatura ativa do plano', planKey);
+      return json(409, { error: `Você já tem uma assinatura ativa do plano ${plan.label}.` });
+    }
+    if (user.planStatus === 'pending') {
+      try {
+        const checkResp = await fetch(`${MP_API}/preapproval/${user.mpPreapprovalId}`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        const existing = await checkResp.json();
+        if (checkResp.ok && existing.status === 'pending') {
+          // Já existe uma tentativa em aberto de verdade (confirmado no MP,
+          // não só no nosso registro local) — reaproveita o checkout dela
+          // em vez de criar outra preapproval concorrente.
+          const existingIsTestMode = accessToken.startsWith('TEST-');
+          const existingCheckoutUrl = existingIsTestMode
+            ? (existing.sandbox_init_point || existing.init_point)
+            : (existing.init_point || existing.sandbox_init_point);
+          const { passwordHash, ...safeUser } = user;
+          console.log('mp-subscribe: preapproval pendente existente reaproveitada —', user.mpPreapprovalId, 'para', user.email);
+          return json(200, {
+            ok: true,
+            checkoutUrl: existingCheckoutUrl,
+            user: safeUser,
+            reused: true,
+          });
+        }
+        // Se não está mais "pending" no MP (expirou, foi cancelada etc.),
+        // segue o fluxo normal e cria uma nova.
+      } catch (err) {
+        console.error('mp-subscribe: falha ao checar preapproval pendente existente, seguindo com criação normal:', err);
+      }
+    }
+  }
+
+  const siteUrl = (process.env.SITE_URL || `https://${event.headers.host}`).replace(/\/$/, '');
+
+  const payload = {
+    reason: `Trem Forge — Plano ${plan.label}`,
+    external_reference: user.id,
+    payer_email: user.email,
+    back_url: `${siteUrl}/painel.html?assinatura=ok`,
+    auto_recurring: {
+      frequency: 1,
+      frequency_type: 'months',
+      transaction_amount: plan.priceBRL,
+      currency_id: 'BRL',
+    },
+  };
+
+  let mpResponse;
+  try {
+    console.log('mp-subscribe: criando preapproval no Mercado Pago —', plan.label, '| valor =', plan.priceBRL, '| payer_email =', user.email);
+    const resp = await fetch(`${MP_API}/preapproval`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(payload),
+    });
+    mpResponse = await resp.json();
+    if (!resp.ok) {
+      console.error('Erro Mercado Pago (preapproval):', mpResponse);
+      return json(502, { error: 'DEBUG: ' + JSON.stringify(mpResponse) });
+    }
+    console.log('mp-subscribe: preapproval criada com sucesso — id =', mpResponse.id, '| status =', mpResponse.status);
+  } catch (err) {
+    console.error('Falha ao chamar Mercado Pago:', err);
+    return json(502, { error: 'DEBUG (catch): ' + (err && err.message ? err.message : String(err)) });
+  }
+
+  const preapprovalId = mpResponse.id;
+  const isTestMode = accessToken.startsWith('TEST-');
+  const checkoutUrl = isTestMode
+    ? (mpResponse.sandbox_init_point || mpResponse.init_point)
+    : (mpResponse.init_point || mpResponse.sandbox_init_point);
+
+  // Guarda os dois índices que o webhook vai precisar: preapproval -> quem
+  // é o usuário e qual plano, e id do usuário -> email (fallback).
+  await mpPreapprovalsStore().setJSON(String(preapprovalId), {
+    email: user.email,
+    plan: planKey,
+    createdAt: new Date().toISOString(),
+  });
+  await userIndexStore().set(user.id, user.email);
+
+  user.plan = planKey;
+  user.planStatus = 'pending';
+  user.planProvider = 'mercadopago';
+  user.planCurrency = 'BRL';
+  user.mpPreapprovalId = String(preapprovalId);
+  addActivity(user, 'plan', `Assinatura do plano ${plan.label} iniciada — aguardando confirmação do pagamento.`);
+
+  await usersStore().setJSON(user.email, user);
+
+  console.log('mp-subscribe: usuário', user.email, 'salvo com planStatus = pending | preapprovalId =', preapprovalId);
+
+  const { passwordHash, ...safeUser } = user;
+  return json(200, {
+    ok: true,
+    checkoutUrl,
+    user: safeUser,
+  });
+};
