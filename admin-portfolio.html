@@ -59,6 +59,12 @@
   }
   .revoke-btn:hover{background:rgba(184,72,63,.1);}
   .revoke-btn:disabled{opacity:.4;cursor:default;}
+  .reactivate-btn{
+    background:transparent;border:1px solid var(--ok);color:var(--ok);
+    padding:6px 12px;font-family:inherit;font-size:12px;border-radius:2px;cursor:pointer;
+    text-transform:uppercase;letter-spacing:.04em;margin-left:8px;
+  }
+  .reactivate-btn:hover{background:rgba(90,157,111,.1);}
   .empty{color:var(--paper-dim);font-size:14px;text-align:center;padding:60px 0;}
 </style>
 </head>
@@ -125,9 +131,10 @@ function renderRecord(r){
       </div>
       ${r.portfolio_message ? `<div class="msg">${r.portfolio_message}</div>` : ''}
       <div class="actions">
-        <button class="revoke-btn" ${r.revoked ? 'disabled' : ''} onclick="revoke('${r.id}')">
-          ${r.revoked ? 'Já revogado' : 'Marcar como revogado'}
-        </button>
+        ${r.revoked
+          ? `<button class="reactivate-btn" onclick="setStatus('${r.id}','reactivate')">Reativar</button>`
+          : `<button class="revoke-btn" onclick="setStatus('${r.id}','revoke')">Marcar como revogado</button>`
+        }
       </div>
     </div>
   `;
@@ -150,17 +157,20 @@ async function loadList(){
   }
 }
 
-async function revoke(id){
-  if(!confirm('Confirma marcar este projeto como revogado? Ele deixará de poder ser exibido.')) return;
+async function setStatus(id, action){
+  const msg = action === 'reactivate'
+    ? 'Confirma reativar esta autorização? Ela volta a poder ser exibida.'
+    : 'Confirma marcar este projeto como revogado? Ele deixará de poder ser exibido.';
+  if(!confirm(msg)) return;
   try{
     const res = await fetch(API_REVOKE, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-admin-password': getPassword() },
-      body: JSON.stringify({ id }),
+      body: JSON.stringify({ id, action }),
     });
-    if(res.ok){ loadList(); } else { alert('Não foi possível revogar.'); }
+    if(res.ok){ loadList(); } else { alert('Não foi possível atualizar.'); }
   }catch(err){
-    alert('Erro de conexão ao revogar.');
+    alert('Erro de conexão ao atualizar.');
   }
 }
 
