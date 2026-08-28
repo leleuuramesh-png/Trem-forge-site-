@@ -58,9 +58,10 @@ exports.handler = async (event) => {
   }
 
   const accessToken = process.env.MP_ACCESS_TOKEN;
-  if (!accessToken) {
-    return json(500, { error: 'Mercado Pago ainda não configurado (falta MP_ACCESS_TOKEN no ambiente).' });
-  }
+if (!accessToken) {
+  return json(500, { error: 'Mercado Pago ainda não configurado (falta MP_ACCESS_TOKEN no ambiente).' });
+}
+console.log('mp-subscribe: DEBUG token — prefixo =', accessToken.slice(0, 12), '| tamanho =', accessToken.length);
 
   const raw = await getRawSessionUser(event);
   if (!raw) return json(401, { error: 'Não autenticado.' });
