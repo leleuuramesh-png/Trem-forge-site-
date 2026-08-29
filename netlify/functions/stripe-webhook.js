@@ -41,6 +41,16 @@ const STATUS_MAP = {
   unpaid: 'canceled',
 };
 
+// API versions recentes da Stripe movem os timestamps do ciclo de
+// cobrança pro nível do subscription item em vez do topo do subscription
+// — tenta os dois lugares pra não quebrar se a versão da conta mudar.
+function getPeriodEndUnix(subscription) {
+  if (subscription.current_period_end) return subscription.current_period_end;
+  const item = subscription.items && subscription.items.data && subscription.items.data[0];
+  if (item && item.current_period_end) return item.current_period_end;
+  return null;
+}
+
 // Acha o e-mail do dono a partir do customer id da Stripe, usando o
 // índice criado em stripe-subscribe.js.
 async function findEmailByCustomer(customerId) {
@@ -48,15 +58,33 @@ async function findEmailByCustomer(customerId) {
   return stripeCustomersStore().get(customerId, { type: 'text' });
 }
 
-async function updateUserPlan(email, updates, activityMessage) {
+async function updateUserPlan(email, updates, activityMessage, eventCreated) {
   const user = await usersStore().get(email, { type: 'json' });
   if (!user) {
     console.error('stripe-webhook: usuário', email, 'não encontrado no usersStore.');
     return;
   }
+
+  // Proteção contra entrega fora de ordem: a Stripe garante ENTREGA, não
+  // ORDEM. Um evento antigo pode ficar preso pra retry e só chegar (ou
+  // ser reenviado manualmente) depois de um evento mais novo já ter sido
+  // processado. Sem isso, um evento "velho" pode sobrescrever o estado
+  // atual com dados obsoletos (ex.: reativar um plano já cancelado, ou
+  // apontar pra uma subscription que já não existe mais).
+  if (eventCreated && user.stripeLastEventAt && eventCreated <= user.stripeLastEventAt) {
+    console.log(
+      'stripe-webhook: evento de', new Date(eventCreated * 1000).toISOString(),
+      'é mais antigo (ou igual) que o último já aplicado para', email,
+      '(', new Date(user.stripeLastEventAt * 1000).toISOString(), ') — ignorado.'
+    );
+    return;
+  }
+  if (eventCreated) updates.stripeLastEventAt = eventCreated;
+
   ensureEngagementFields(user);
 
-  const changed = user.planStatus !== updates.planStatus;
+  const changed = user.planStatus !== updates.planStatus
+    || Boolean(user.cancelAtPeriodEnd) !== Boolean(updates.cancelAtPeriodEnd);
   Object.assign(user, updates);
   if (changed && activityMessage) {
     addActivity(user, 'plan', activityMessage);
@@ -181,7 +209,9 @@ exports.handler = async (event) => {
       planCurrency: 'USD',
       stripeCustomerId: obj.customer,
       stripeSubscriptionId: obj.subscription,
-    }, `Assinatura do plano ${planLabel} (US$) confirmada. 🎉`);
+      cancelAtPeriodEnd: false,
+      planCancelAt: null,
+    }, `Assinatura do plano ${planLabel} (US$) confirmada. 🎉`, stripeEvent.created);
     return json(200, { ok: true });
   }
 
@@ -196,13 +226,27 @@ exports.handler = async (event) => {
     const newStatus = isDeleted ? 'canceled' : (STATUS_MAP[obj.status] || obj.status);
     const planKey = (obj.metadata && obj.metadata.plan) || null;
     const planLabel = (PLAN_CONFIG[planKey] && PLAN_CONFIG[planKey].label) || planKey;
+    const cancelAtPeriodEnd = !isDeleted && Boolean(obj.cancel_at_period_end);
+    const periodEndUnix = getPeriodEndUnix(obj);
+    const planCancelAt = (!isDeleted && cancelAtPeriodEnd && periodEndUnix)
+      ? new Date(periodEndUnix * 1000).toISOString()
+      : null;
+    const dateLabel = planCancelAt ? new Date(planCancelAt).toLocaleDateString('pt-BR') : 'o fim do ciclo atual';
 
-    const messages = {
-      active: `Assinatura do plano ${planLabel} (US$) confirmada. 🎉`,
-      paused: `Assinatura do plano ${planLabel} (US$) pausada.`,
-      canceled: `Assinatura do plano ${planLabel} (US$) cancelada.`,
-      pending: `Assinatura do plano ${planLabel} (US$) com pagamento pendente.`,
-    };
+    let message;
+    if (isDeleted) {
+      message = `Assinatura do plano ${planLabel} (US$) encerrada.`;
+    } else if (newStatus === 'active' && cancelAtPeriodEnd) {
+      message = `Assinatura do plano ${planLabel} (US$) cancelada — acesso continua até ${dateLabel}, sem renovar depois.`;
+    } else if (newStatus === 'active') {
+      message = `Assinatura do plano ${planLabel} (US$) confirmada. 🎉`;
+    } else if (newStatus === 'paused') {
+      message = `Assinatura do plano ${planLabel} (US$) pausada.`;
+    } else if (newStatus === 'canceled') {
+      message = `Assinatura do plano ${planLabel} (US$) cancelada.`;
+    } else if (newStatus === 'pending') {
+      message = `Assinatura do plano ${planLabel} (US$) com pagamento pendente.`;
+    }
 
     await updateUserPlan(email, {
       plan: planKey,
@@ -211,7 +255,9 @@ exports.handler = async (event) => {
       planCurrency: 'USD',
       stripeCustomerId: obj.customer,
       stripeSubscriptionId: isDeleted ? null : obj.id,
-    }, messages[newStatus]);
+      cancelAtPeriodEnd,
+      planCancelAt,
+    }, message, stripeEvent.created);
     return json(200, { ok: true });
   }
 
