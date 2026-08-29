@@ -80,6 +80,10 @@ exports.handler = async (event) => {
     user.planStatus = 'canceled';
     user.cancelAtPeriodEnd = false;
     user.planCancelAt = null;
+    // Carimba "agora" como último evento aplicado: qualquer webhook zumbi
+    // (sempre com created no passado) fica bloqueado pela checagem de
+    // stripe-webhook.js, mesmo sem ter passado por lá desta vez.
+    user.stripeLastEventAt = Math.floor(Date.now() / 1000);
     addActivity(user, 'plan', `Assinatura do plano ${planLabel} (US$) já estava cancelada — painel sincronizado.`);
     await usersStore().setJSON(user.email, user);
     const { passwordHash, ...safeUser } = user;
@@ -107,6 +111,10 @@ exports.handler = async (event) => {
   // agora, só a renovação futura é que não vai acontecer.
   user.cancelAtPeriodEnd = true;
   user.planCancelAt = periodEndIso;
+  // Mesma proteção: sem isso, um webhook zumbi antigo (ex.: um retry de
+  // dias atrás de quando o secret estava errado) pode passar pela
+  // checagem de ordem em stripe-webhook.js e reverter esse cancelamento.
+  user.stripeLastEventAt = Math.floor(Date.now() / 1000);
   addActivity(user, 'plan', `Assinatura do plano ${planLabel} (US$) cancelada — acesso continua até ${dateLabel}, sem renovar depois.`);
 
   await usersStore().setJSON(user.email, user);
