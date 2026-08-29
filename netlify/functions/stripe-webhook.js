@@ -222,6 +222,25 @@ exports.handler = async (event) => {
       return json(200, { ok: true });
     }
 
+    // Proteção extra além do timestamp: um evento pode ter created "mais
+    // novo" no relógio e ainda assim pertencer a uma assinatura ANTIGA
+    // do mesmo cliente (ex.: uma tentativa de checkout anterior que ficou
+    // presa na fila de retry). Sem isso, um evento desses pode sobrescrever
+    // os dados da assinatura atual mesmo passando pela checagem de ordem.
+    // Só ignoramos quando o usuário JÁ tem uma assinatura registrada e ela
+    // é diferente da referenciada no evento — se ainda não tem nenhuma
+    // (stripeSubscriptionId vazio), deixa passar, pra não travar o
+    // primeiro evento de uma assinatura nova que chegue antes do
+    // checkout.session.completed correspondente.
+    const currentUser = await usersStore().get(email, { type: 'json' });
+    if (currentUser && currentUser.stripeSubscriptionId && currentUser.stripeSubscriptionId !== obj.id) {
+      console.log(
+        'stripe-webhook: evento da assinatura', obj.id,
+        'não bate com a assinatura atual do usuário (', currentUser.stripeSubscriptionId, ') — ignorado.'
+      );
+      return json(200, { ok: true });
+    }
+
     const isDeleted = stripeEvent.type === 'customer.subscription.deleted';
     const newStatus = isDeleted ? 'canceled' : (STATUS_MAP[obj.status] || obj.status);
     const planKey = (obj.metadata && obj.metadata.plan) || null;
