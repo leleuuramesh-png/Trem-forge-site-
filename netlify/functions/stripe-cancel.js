@@ -2,11 +2,15 @@
 //
 // POST /.netlify/functions/stripe-cancel
 //
-// Cancela a assinatura recorrente do usuário logado na Stripe.
+// Agenda o cancelamento da assinatura pro FIM DO CICLO atual (não corta o
+// acesso na hora — o cliente já pagou esse período, então continua Pro
+// até a data de renovação e só para de ser cobrado depois). Pra reverter
+// isso antes da data, veja stripe-reactivate.js.
+//
 // Atualizamos o registro local de forma otimista pra refletir na hora no
 // painel — a confirmação definitiva ainda chega depois via webhook
-// (stripe-webhook.js, evento customer.subscription.deleted), que é
-// idempotente nesse caso.
+// (stripe-webhook.js, evento customer.subscription.updated /
+// customer.subscription.deleted), que é idempotente nesse caso.
 
 const Stripe = require('stripe');
 const {
@@ -16,6 +20,16 @@ const {
   json,
   PLAN_CONFIG,
 } = require('./_lib/auth');
+
+// API versions recentes da Stripe movem os timestamps do ciclo de
+// cobrança pro nível do subscription item em vez do topo do subscription
+// — tenta os dois lugares pra não quebrar se a versão da conta mudar.
+function getPeriodEndUnix(subscription) {
+  if (subscription.current_period_end) return subscription.current_period_end;
+  const item = subscription.items && subscription.items.data && subscription.items.data[0];
+  if (item && item.current_period_end) return item.current_period_end;
+  return null;
+}
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
@@ -42,16 +56,36 @@ exports.handler = async (event) => {
     return json(200, { ok: true, alreadyCanceled: true, user: safeUser });
   }
 
+  if (user.cancelAtPeriodEnd) {
+    // Já está agendado pra cancelar — não precisa chamar a Stripe de novo.
+    const { passwordHash, ...safeUser } = user;
+    return json(200, { ok: true, alreadyCanceled: true, user: safeUser });
+  }
+
+  let subscription;
   try {
-    await stripe.subscriptions.cancel(user.stripeSubscriptionId);
+    subscription = await stripe.subscriptions.update(user.stripeSubscriptionId, {
+      cancel_at_period_end: true,
+    });
   } catch (err) {
-    console.error('stripe-cancel: falha ao cancelar assinatura na Stripe:', err);
-    return json(502, { error: 'Não foi possível cancelar a assinatura agora. Tente novamente ou fale com o suporte.' });
+    console.error('stripe-cancel: falha ao agendar cancelamento na Stripe:', err);
+    // DEBUG TEMPORÁRIO — mostra o motivo real na tela pra diagnosticar.
+    // Reverter pra mensagem genérica depois de resolver.
+    return json(502, { error: 'Não foi possível cancelar: ' + err.message });
   }
 
   const planLabel = (PLAN_CONFIG[user.plan] && PLAN_CONFIG[user.plan].label) || user.plan;
-  user.planStatus = 'canceled';
-  addActivity(user, 'plan', `Assinatura do plano ${planLabel} (US$) cancelada.`);
+  const periodEndUnix = getPeriodEndUnix(subscription);
+  const periodEndIso = periodEndUnix ? new Date(periodEndUnix * 1000).toISOString() : null;
+  const dateLabel = periodEndIso
+    ? new Date(periodEndIso).toLocaleDateString('pt-BR')
+    : 'o fim do ciclo atual';
+
+  // planStatus continua 'active' de propósito: o acesso não é cortado
+  // agora, só a renovação futura é que não vai acontecer.
+  user.cancelAtPeriodEnd = true;
+  user.planCancelAt = periodEndIso;
+  addActivity(user, 'plan', `Assinatura do plano ${planLabel} (US$) cancelada — acesso continua até ${dateLabel}, sem renovar depois.`);
 
   await usersStore().setJSON(user.email, user);
 
