@@ -149,24 +149,10 @@ exports.handler = async (event) => {
 
   let stripeEvent;
   try {
-    stripeEvent = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);
+    stripeEvent = await stripe.webhooks.constructEventAsync(rawBody, signature, webhookSecret);
   } catch (err) {
     console.error('stripe-webhook: assinatura inválida, notificação descartada:', err.message);
-    // DEBUG TEMPORÁRIO — remover depois de diagnosticar. Não expõe o
-    // secret inteiro, só o suficiente pra comparar com o painel da Stripe.
-    return json(400, {
-      error: 'Assinatura inválida.',
-      debug: {
-        errMessage: err.message,
-        errType: err.type || null,
-        secretLen: webhookSecret.length,
-        secretLast4: webhookSecret.slice(-4),
-        secretFirst10: webhookSecret.slice(0, 10),
-        sigHeaderPresent: !!signature,
-        sigHeaderPreview: signature ? signature.slice(0, 30) : null,
-        bodyLen: rawBody.length,
-      },
-    });
+    return json(400, { error: 'Assinatura inválida.' });
   }
 
   console.log('stripe-webhook: evento recebido —', stripeEvent.type, '| id =', stripeEvent.id);
