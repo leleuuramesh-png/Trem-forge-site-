@@ -64,6 +64,11 @@ exports.handler = async (event) => {
 
   const planLabel = (PLAN_CONFIG[user.plan] && PLAN_CONFIG[user.plan].label) || user.plan;
   user.planStatus = 'canceled';
+  // Carimba "agora" como último evento aplicado: um webhook atrasado
+  // sobre essa mesma preapproval (ex: um retrato antigo dela ainda
+  // "authorized", reenviado pela fila do Mercado Pago) vai ter
+  // last_modified mais antigo que isso e será ignorado por mp-webhook.js.
+  user.mpLastEventAt = Date.now();
   addActivity(user, 'plan', `Assinatura do plano ${planLabel} cancelada.`);
 
   await usersStore().setJSON(user.email, user);
