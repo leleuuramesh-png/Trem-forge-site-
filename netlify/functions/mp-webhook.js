@@ -241,11 +241,19 @@ exports.handler = async (event) => {
     return json(200, { ok: true });
   }
 
-  // Proteção contra notificação fora de ordem: se essa notificação é de uma
-  // preapproval DIFERENTE da que o usuário tem hoje, e essa preapproval foi
-  // criada antes da atual, é uma notificação atrasada de uma assinatura já
-  // superada (ex: tentativa cancelada antes de uma segunda bem-sucedida).
-  // Nesse caso, ignoramos — a preapproval mais nova é que deve mandar no status.
+  // Proteção contra notificação fora de ordem. Duas situações:
+  //
+  // 1) Preapproval DIFERENTE da atual, criada antes — assinatura antiga já
+  //    superada por uma nova (ex: tentativa cancelada antes de uma segunda
+  //    bem-sucedida). Comparamos pelo date_created de cada preapproval.
+  //
+  // 2) MESMA preapproval, mas o webhook chegou atrasado (ex: reenvio da
+  //    fila do Mercado Pago) carregando um retrato ANTIGO dela — por
+  //    exemplo, um evento de quando ainda estava "authorized", entregue
+  //    depois de já termos cancelado direto via mp-cancel.js. Usamos
+  //    preapproval.last_modified (quando o recurso mudou de verdade, não
+  //    quando foi criado) comparado com user.mpLastEventAt, que a gente
+  //    carimba toda vez que muda o status diretamente (fora do webhook).
   const incomingCreatedAt = preapproval.date_created ? new Date(preapproval.date_created).getTime() : 0;
   const currentCreatedAt = user.mpPreapprovalCreatedAt || 0;
   const isSamePreapproval = user.mpPreapprovalId === dataId;
@@ -254,6 +262,19 @@ exports.handler = async (event) => {
     console.warn(
       `mp-webhook: notificação da preapproval ${dataId} (criada ${preapproval.date_created}) ignorada — ` +
       `usuário ${email} já está em ${user.mpPreapprovalId} (criada em timestamp mais recente).`
+    );
+    return json(200, { ok: true });
+  }
+
+  const incomingModifiedAt = preapproval.last_modified
+    ? new Date(preapproval.last_modified).getTime()
+    : incomingCreatedAt;
+  const lastEventAt = user.mpLastEventAt || 0;
+
+  if (isSamePreapproval && lastEventAt && incomingModifiedAt && incomingModifiedAt <= lastEventAt) {
+    console.warn(
+      `mp-webhook: notificação da preapproval ${dataId} (last_modified ${preapproval.last_modified}) ignorada — ` +
+      `mais antiga ou igual ao último evento processado (${new Date(lastEventAt).toISOString()}) pro usuário ${email}.`
     );
     return json(200, { ok: true });
   }
@@ -268,6 +289,7 @@ exports.handler = async (event) => {
   user.planCurrency = 'BRL';
   user.mpPreapprovalId = dataId;
   user.mpPreapprovalCreatedAt = incomingCreatedAt || currentCreatedAt;
+  user.mpLastEventAt = incomingModifiedAt || Date.now();
 
   if (changed) {
     const messages = {
