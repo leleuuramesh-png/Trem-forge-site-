@@ -62,6 +62,30 @@ exports.handler = async (event) => {
     return json(200, { ok: true, alreadyCanceled: true, user: safeUser });
   }
 
+  // Confere o status real na Stripe antes de tentar mexer. Isso evita um
+  // erro feio pro usuário se o nosso registro local ficou desatualizado
+  // (ex.: apontando pra uma subscription que já foi cancelada de outra
+  // forma) — nesse caso, só sincronizamos o painel em vez de falhar.
+  let currentSubscription;
+  try {
+    currentSubscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+  } catch (err) {
+    console.error('stripe-cancel: falha ao consultar assinatura na Stripe:', err);
+    return json(502, { error: 'Não foi possível verificar sua assinatura agora. Tente novamente ou fale com o suporte.' });
+  }
+
+  if (currentSubscription.status === 'canceled') {
+    console.warn('stripe-cancel: registro local desatualizado — subscription', user.stripeSubscriptionId, 'já estava cancelada na Stripe. Sincronizando.');
+    const planLabel = (PLAN_CONFIG[user.plan] && PLAN_CONFIG[user.plan].label) || user.plan;
+    user.planStatus = 'canceled';
+    user.cancelAtPeriodEnd = false;
+    user.planCancelAt = null;
+    addActivity(user, 'plan', `Assinatura do plano ${planLabel} (US$) já estava cancelada — painel sincronizado.`);
+    await usersStore().setJSON(user.email, user);
+    const { passwordHash, ...safeUser } = user;
+    return json(200, { ok: true, user: safeUser });
+  }
+
   let subscription;
   try {
     subscription = await stripe.subscriptions.update(user.stripeSubscriptionId, {
@@ -69,9 +93,7 @@ exports.handler = async (event) => {
     });
   } catch (err) {
     console.error('stripe-cancel: falha ao agendar cancelamento na Stripe:', err);
-    // DEBUG TEMPORÁRIO — mostra o motivo real na tela pra diagnosticar.
-    // Reverter pra mensagem genérica depois de resolver.
-    return json(502, { error: 'Não foi possível cancelar: ' + err.message });
+    return json(502, { error: 'Não foi possível cancelar a assinatura agora. Tente novamente ou fale com o suporte.' });
   }
 
   const planLabel = (PLAN_CONFIG[user.plan] && PLAN_CONFIG[user.plan].label) || user.plan;
