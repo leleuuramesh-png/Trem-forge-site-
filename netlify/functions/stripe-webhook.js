@@ -58,12 +58,29 @@ async function findEmailByCustomer(customerId) {
   return stripeCustomersStore().get(customerId, { type: 'text' });
 }
 
-async function updateUserPlan(email, updates, activityMessage) {
+async function updateUserPlan(email, updates, activityMessage, eventCreated) {
   const user = await usersStore().get(email, { type: 'json' });
   if (!user) {
     console.error('stripe-webhook: usuário', email, 'não encontrado no usersStore.');
     return;
   }
+
+  // Proteção contra entrega fora de ordem: a Stripe garante ENTREGA, não
+  // ORDEM. Um evento antigo pode ficar preso pra retry e só chegar (ou
+  // ser reenviado manualmente) depois de um evento mais novo já ter sido
+  // processado. Sem isso, um evento "velho" pode sobrescrever o estado
+  // atual com dados obsoletos (ex.: reativar um plano já cancelado, ou
+  // apontar pra uma subscription que já não existe mais).
+  if (eventCreated && user.stripeLastEventAt && eventCreated <= user.stripeLastEventAt) {
+    console.log(
+      'stripe-webhook: evento de', new Date(eventCreated * 1000).toISOString(),
+      'é mais antigo (ou igual) que o último já aplicado para', email,
+      '(', new Date(user.stripeLastEventAt * 1000).toISOString(), ') — ignorado.'
+    );
+    return;
+  }
+  if (eventCreated) updates.stripeLastEventAt = eventCreated;
+
   ensureEngagementFields(user);
 
   const changed = user.planStatus !== updates.planStatus
@@ -194,7 +211,7 @@ exports.handler = async (event) => {
       stripeSubscriptionId: obj.subscription,
       cancelAtPeriodEnd: false,
       planCancelAt: null,
-    }, `Assinatura do plano ${planLabel} (US$) confirmada. 🎉`);
+    }, `Assinatura do plano ${planLabel} (US$) confirmada. 🎉`, stripeEvent.created);
     return json(200, { ok: true });
   }
 
@@ -240,7 +257,7 @@ exports.handler = async (event) => {
       stripeSubscriptionId: isDeleted ? null : obj.id,
       cancelAtPeriodEnd,
       planCancelAt,
-    }, message);
+    }, message, stripeEvent.created);
     return json(200, { ok: true });
   }
 
