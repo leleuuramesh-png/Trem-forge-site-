@@ -49,6 +49,7 @@ const HANDLERS = {
   'mp-cancel': () => require('../../netlify/functions/mp-cancel.js'),
   'mp-webhook': () => require('../../netlify/functions/mp-webhook.js'),
   'stripe-subscribe': () => require('../../netlify/functions/stripe-subscribe.js'),
+  'stripe-checkout': () => require('../../netlify/functions/stripe-checkout.js'),
   'stripe-cancel': () => require('../../netlify/functions/stripe-cancel.js'),
   'stripe-reactivate': () => require('../../netlify/functions/stripe-reactivate.js'),
   'stripe-webhook': () => require('../../netlify/functions/stripe-webhook.js'),
