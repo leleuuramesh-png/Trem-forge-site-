@@ -52,6 +52,10 @@ exports.handler = async (event) => {
   const planLabel = (PLAN_CONFIG[user.plan] && PLAN_CONFIG[user.plan].label) || user.plan;
   user.cancelAtPeriodEnd = false;
   user.planCancelAt = null;
+  // Mesma proteção usada em stripe-cancel.js: carimba "agora" pra
+  // bloquear qualquer webhook zumbi antigo que tente reverter essa
+  // reativação via stripe-webhook.js.
+  user.stripeLastEventAt = Math.floor(Date.now() / 1000);
   addActivity(user, 'plan', `Cancelamento da assinatura do plano ${planLabel} (US$) desfeito — vai continuar renovando normalmente. 🎉`);
 
   await usersStore().setJSON(user.email, user);
