@@ -157,6 +157,8 @@ exports.handler = async (event) => {
     return json(400, {
       error: 'Assinatura inválida.',
       debug: {
+        errMessage: err.message,
+        errType: err.type || null,
         secretLen: webhookSecret.length,
         secretLast4: webhookSecret.slice(-4),
         secretFirst10: webhookSecret.slice(0, 10),
