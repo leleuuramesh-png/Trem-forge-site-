@@ -1,0 +1,66 @@
+{
+  "meta": { "name": "Deutsch", "flag": "🇩🇪" },
+  "nav": {
+    "agentes": "Agenten",
+    "testar_ia": "KI testen",
+    "como_funciona": "So funktioniert's",
+    "recursos": "Funktionen",
+    "roadmap": "Roadmap",
+    "modo_empresa": "Business-Modus",
+    "planos": "Preise",
+    "templates": "Vorlagen",
+    "docs": "Docs",
+    "entrar": "Anmelden",
+    "comecar": "Kostenlos starten",
+    "comecar_mobile": "Kostenlos starten →",
+    "search_placeholder": "Funktionen, Pläne, Bereiche suchen...",
+    "search_aria": "Website durchsuchen",
+    "search_close_aria": "Suche schließen",
+    "menu_aria": "Menü öffnen"
+  },
+  "hero": {
+    "badge": "✨ Erstellt mit Künstlicher Intelligenz",
+    "title_html": "Verwandeln Sie jede <em>Idee</em> in eine <em>vollständige Software</em>.",
+    "description": "Beschreiben Sie Ihr Projekt in natürlicher Sprache. Trem Forge erstellt automatisch Websites, Apps, Systeme, APIs und Datenbanken und veröffentlicht alles in wenigen Minuten in der Cloud.",
+    "btn_primary": "Kostenlos Starten",
+    "btn_secondary": "▶ Demo Ansehen",
+    "terminal_title": "Trem Forge AI",
+    "trust_label": "Basiert auf"
+  },
+  "agents": {
+    "eyebrow": "Die Crew",
+    "title": "Sechs Agenten. Eine Reise.",
+    "subtitle": "Statt eines einzelnen generischen Modells verteilt ein Orchestrator Ihre Idee auf Spezialisten, die parallel arbeiten.",
+    "architect_title": "Architect AI",
+    "architect_desc": "Analysiert Ihre Anforderungen und definiert die passende Architektur und Technologien für das Projekt.",
+    "designer_title": "Designer AI",
+    "designer_desc": "Entwirft intuitive Oberflächen, Farbpalette und Typografie mit garantierter Barrierefreiheit.",
+    "developer_title": "Developer AI",
+    "developer_desc": "Implementiert den Code nach Best Practices, mit automatisierten Tests und Performance im Blick.",
+    "database_title": "Database AI",
+    "database_desc": "Modelliert die Datenbank, optimiert Abfragen und gewährleistet referenzielle Integrität.",
+    "qa_title": "QA AI",
+    "qa_desc": "Erstellt Testfälle, führt Validierungen durch und findet Bugs, bevor Sie sie sehen.",
+    "deploy_title": "Deploy AI",
+    "deploy_desc": "Richtet die Produktion ein, automatisiert die Veröffentlichung und überwacht das Ergebnis live."
+  },
+  "chat_demo": {
+    "eyebrow": "Jetzt ausprobieren",
+    "title": "Chatten Sie mit der TremForge-KI",
+    "subtitle": "Beschreiben Sie Ihre Idee und sehen Sie, wie der Orchestrator in Echtzeit einen Plan entwirft.",
+    "greeting": "Hallo! Erzählen Sie mir Ihre Idee — eine App, eine Website, ein System — und ich helfe Ihnen, den Projektplan zu skizzieren.",
+    "input_placeholder": "Beschreiben Sie Ihre Idee...",
+    "footnote": "Demo — die Antworten werden von KI generiert und können variieren."
+  },
+  "cta_final": {
+    "title": "Bereit, Ihre Idee auf die Schiene zu bringen?",
+    "subtitle": "Keine Einrichtung, keine Reibung. Einfach einsteigen und zusehen, wie die Software den Bahnhof verlässt.",
+    "button": "Kostenlos starten"
+  },
+  "footer": {
+    "copyright": "© 2026 TREM FORGE — jede Station, eine Reise",
+    "docs": "Dokumentation",
+    "privacy": "Datenschutzrichtlinie",
+    "terms": "Nutzungsbedingungen"
+  }
+}

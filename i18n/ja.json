@@ -1,0 +1,66 @@
+{
+  "meta": { "name": "日本語", "flag": "🇯🇵" },
+  "nav": {
+    "agentes": "エージェント",
+    "testar_ia": "AIを試す",
+    "como_funciona": "仕組み",
+    "recursos": "機能",
+    "roadmap": "ロードマップ",
+    "modo_empresa": "ビジネスモード",
+    "planos": "料金プラン",
+    "templates": "テンプレート",
+    "docs": "ドキュメント",
+    "entrar": "ログイン",
+    "comecar": "無料で始める",
+    "comecar_mobile": "無料で始める →",
+    "search_placeholder": "機能、プラン、セクションを検索...",
+    "search_aria": "サイト内検索",
+    "search_close_aria": "検索を閉じる",
+    "menu_aria": "メニューを開く"
+  },
+  "hero": {
+    "badge": "✨ 人工知能で構築",
+    "title_html": "どんな<em>アイデア</em>も<em>完成したソフトウェア</em>に。",
+    "description": "自然な言葉でプロジェクトを説明するだけ。Trem Forgeがウェブサイト、アプリ、システム、API、データベースを自動生成し、数分でクラウドに公開します。",
+    "btn_primary": "無料で始める",
+    "btn_secondary": "▶ デモを見る",
+    "terminal_title": "Trem Forge AI",
+    "trust_label": "採用している技術"
+  },
+  "agents": {
+    "eyebrow": "クルー",
+    "title": "6人のエージェント。ひとつの旅。",
+    "subtitle": "単一の汎用モデルではなく、オーケストレーターがアイデアを並行して働く専門エージェントに振り分けます。",
+    "architect_title": "Architect AI",
+    "architect_desc": "要件を分析し、プロジェクトに最適なアーキテクチャと技術を定義します。",
+    "designer_title": "Designer AI",
+    "designer_desc": "直感的なインターフェース、配色、タイポグラフィをアクセシビリティに配慮して設計します。",
+    "developer_title": "Developer AI",
+    "developer_desc": "ベストプラクティスに従ってコードを実装し、自動テストとパフォーマンスを重視します。",
+    "database_title": "Database AI",
+    "database_desc": "データベースを設計し、クエリを最適化し、参照整合性を保証します。",
+    "qa_title": "QA AI",
+    "qa_desc": "テストケースを作成し、検証を実行して、表示される前にバグを発見します。",
+    "deploy_title": "Deploy AI",
+    "deploy_desc": "本番環境を構築し、公開を自動化し、稼働結果をリアルタイムで監視します。"
+  },
+  "chat_demo": {
+    "eyebrow": "今すぐ試す",
+    "title": "TremForgeのAIとチャット",
+    "subtitle": "アイデアを説明すると、オーケストレーターがリアルタイムで計画を描き出します。",
+    "greeting": "こんにちは！アプリ、サイト、システムなど、あなたのアイデアを教えてください。プロジェクト計画を一緒に描きましょう。",
+    "input_placeholder": "アイデアを説明してください...",
+    "footnote": "デモです — 回答はAIによって生成され、内容が変わることがあります。"
+  },
+  "cta_final": {
+    "title": "アイデアを線路に乗せる準備はできましたか？",
+    "subtitle": "設定不要、摩擦ゼロ。乗り込むだけで、ソフトウェアが駅を出発します。",
+    "button": "無料で始める"
+  },
+  "footer": {
+    "copyright": "© 2026 TREM FORGE — すべての駅が、ひとつの旅",
+    "docs": "ドキュメント",
+    "privacy": "プライバシーポリシー",
+    "terms": "利用規約"
+  }
+}
