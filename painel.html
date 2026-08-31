@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="painel.meta.page_title">Painel — Trem Forge</title>
+<meta name="robots" content="noindex, follow">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,700;1,800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+  (function(){
+    try {
+      if (localStorage.getItem('tf_theme') === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    } catch(e){}
+  })();
+</script>
+<style>
+  :root{
+    --bg:#0D0704; --card:#170E08; --line:#2E1D12;
+    --primary:#FF5A1F; --primary-light:#FFB347;
+    --text:#F3F4F6; --text-mute:#CBC0B4; --text-faint:#8C7C6E;
+    --primary-grad:linear-gradient(135deg, #E8460C, #FFB347);
+    --radius:20px; --shadow:0 20px 80px rgba(0,0,0,.45);
+    --danger:#F87171; --ok:#34D399;
+    --card-bg:rgba(255,255,255,.04); --card-line:rgba(255,255,255,.08);
+    --input-bg:rgba(0,0,0,.3); --panel-bg:rgba(0,0,0,.2); --panel-bg-2:rgba(0,0,0,.25); --panel-bg-3:rgba(0,0,0,.35);
+  }
+  [data-theme="light"]{
+    --bg:#FBF6F0; --card:#FFFFFF; --line:#EAD9C8;
+    --text:#241407; --text-mute:#5B4A3B; --text-faint:#8C7C6E;
+    --shadow:0 16px 50px rgba(120,70,30,.12);
+    --card-bg:#FFFFFF; --card-line:#EFE1D3;
+    --input-bg:#F6EDE3; --panel-bg:#F6EDE3; --panel-bg-2:#F1E4D6; --panel-bg-3:#EFE1D3;
+  }
+  .theme-toggle{width:38px; height:38px; border-radius:10px; border:1px solid var(--line); background:var(--card-bg); color:var(--text); cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center;}
+  .theme-toggle:hover{border-color:var(--primary);}
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg); color:var(--text); font-family:'Inter',system-ui,sans-serif;
+    min-height:100vh; position:relative; overflow-x:hidden;
+    transition:background .25s ease, color .25s ease;
+  }
+  a{color:inherit; text-decoration:none;}
+  h1,h2,.display{font-family:'Geist','Inter',sans-serif; letter-spacing:-0.015em;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+
+  .glow-a{position:fixed; top:-10%; left:50%; translate:-50% 0; width:900px; height:600px; z-index:0;
+    background:radial-gradient(closest-side, rgba(255,90,31,0.18), transparent 70%); pointer-events:none;}
+  .glow-b{position:fixed; bottom:-10%; right:-10%; width:700px; height:700px; z-index:0;
+    background:radial-gradient(closest-side, rgba(255,140,60,0.12), transparent 70%); pointer-events:none;}
+
+  header{position:relative; z-index:1; display:flex; align-items:center; justify-content:space-between;
+    padding:18px 28px; border-bottom:1px solid var(--line);}
+  .brand{display:flex; align-items:center; gap:10px;}
+  .brand .mark{width:32px; height:32px; border-radius:9px; background:#000; display:flex; align-items:center; justify-content:center; box-shadow:0 0 20px rgba(255,90,31,.4);}
+  .brand span{font-size:16px; font-weight:700; font-family:'Geist',sans-serif;}
+  .head-actions{display:flex; align-items:center; gap:14px;}
+  .head-actions a, .head-actions button{font-size:13px; color:var(--text-mute); font-weight:600; background:none; border:none; cursor:pointer; font-family:inherit;}
+  .head-actions button:hover, .head-actions a:hover{color:var(--text);}
+
+  main{position:relative; z-index:1; max-width:920px; margin:0 auto; padding:32px 20px 80px;}
+
+  .skeleton{opacity:.4; text-align:center; padding:60px 0; color:var(--text-faint); font-size:14px;}
+
+  #dashboard{display:none;}
+  #dashboard.ready{display:block;}
+
+  .hello{margin-bottom:26px;}
+  .hello h1{font-size:24px; margin-bottom:4px;}
+  .hello p{color:var(--text-mute); font-size:14px;}
+
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;}
+  @media (max-width:640px){ .grid{grid-template-columns:1fr;} }
+
+  .card{
+    background:var(--card-bg); border:1px solid var(--card-line);
+    border-radius:var(--radius); padding:22px; box-shadow:var(--shadow);
+  }
+  .card h2{font-size:14px; margin-bottom:14px; color:var(--text-mute); text-transform:uppercase; letter-spacing:.04em;}
+  .card.full{grid-column:1/-1;}
+
+  .stat-row{display:flex; align-items:baseline; gap:8px;}
+  .stat-row .num{font-size:34px; font-weight:800; font-family:'Geist',sans-serif;}
+  .stat-row .unit{font-size:13px; color:var(--text-faint);}
+  .stat-sub{margin-top:6px; font-size:12.5px; color:var(--text-faint);}
+
+  .streak-flames{display:flex; gap:4px; margin-top:10px;}
+  .flame{width:22px; height:22px; border-radius:6px; background:rgba(255,255,255,.06); display:flex; align-items:center; justify-content:center; font-size:12px;}
+  .flame.lit{background:var(--primary-grad);}
+
+  .progress-track{background:var(--panel-bg-3); border-radius:99px; height:8px; overflow:hidden; margin:10px 0 4px;}
+  .progress-fill{height:100%; background:var(--primary-grad); border-radius:99px; transition:width .4s ease;}
+
+  .checklist{display:flex; flex-direction:column; gap:10px;}
+  .check-item{display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:var(--panel-bg); border:1px solid var(--line); border-radius:12px; padding:12px 14px;}
+  .check-item .left{display:flex; align-items:center; gap:10px; font-size:13.5px;}
+  .check-dot{width:20px; height:20px; border-radius:50%; border:2px solid var(--line); flex:none; display:flex; align-items:center; justify-content:center; font-size:11px;}
+  .check-item.done .check-dot{background:var(--ok); border-color:var(--ok); color:#06251A;}
+  .check-item.done .left{color:var(--text-faint); text-decoration:line-through;}
+  .check-item .reward{font-size:11.5px; color:var(--primary-light); font-weight:700; white-space:nowrap;}
+  .mini-btn{background:var(--primary-grad); color:#fff; border:none; border-radius:8px; padding:7px 12px; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit;}
+  .mini-btn:disabled{opacity:.5; cursor:not-allowed;}
+  .btn-danger-outline{background:transparent; border:1px solid var(--danger); color:var(--danger);}
+  .btn-danger-outline:hover{background:rgba(248,113,113,.1);}
+  .mini-input{background:var(--input-bg); border:1px solid var(--line); border-radius:8px; padding:7px 10px; color:var(--text); font-size:12.5px; font-family:inherit; width:140px;}
+
+  .badges-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(74px, 1fr)); gap:10px;}
+  .badge{aspect-ratio:1; border-radius:14px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
+    background:var(--panel-bg-2); border:1px solid var(--line); font-size:22px; text-align:center; padding:6px;}
+  .badge.locked{opacity:.28; filter:grayscale(1);}
+  .badge span.label{font-size:9px; color:var(--text-faint); line-height:1.2; font-weight:600;}
+
+  .activity-list{display:flex; flex-direction:column; gap:2px; max-height:280px; overflow-y:auto;}
+  .activity-item{display:flex; gap:10px; padding:10px 4px; border-bottom:1px solid var(--line); font-size:13px;}
+  .activity-item:last-child{border-bottom:none;}
+  .activity-item .icon{flex:none;}
+  .activity-item .when{color:var(--text-faint); font-size:11px; margin-top:2px;}
+  .empty-note{color:var(--text-faint); font-size:13px; padding:8px 4px;}
+
+  .referral-box{display:flex; gap:8px; align-items:center; margin-top:4px;}
+  .referral-box input{flex:1; background:var(--input-bg); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--text-mute); font-size:12.5px; font-family:'JetBrains Mono',monospace;}
+  .copy-btn{background:var(--primary-grad); color:#fff; border:none; border-radius:10px; padding:10px 16px; font-weight:700; font-size:12.5px; cursor:pointer; font-family:inherit; white-space:nowrap;}
+  .referral-sub{margin-top:8px; font-size:12.5px; color:var(--text-faint);}
+
+  .name-edit{display:flex; gap:8px; margin-top:4px;}
+  .name-edit input{flex:1; background:var(--input-bg); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--text); font-size:13.5px; font-family:inherit;}
+
+  .twofa-confirm{display:none; flex-direction:column; gap:8px; margin-top:12px; background:var(--panel-bg); border:1px solid var(--line); border-radius:12px; padding:12px;}
+  .twofa-confirm.open{display:flex;}
+
+  .card-head-row{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+  .card-head-row h2{margin-bottom:0;}
+  .add-btn{background:var(--primary-grad); color:#fff; border:none; border-radius:9px; padding:8px 14px; font-size:12.5px; font-weight:700; cursor:pointer; font-family:inherit; white-space:nowrap;}
+
+  .project-form{display:none; flex-direction:column; gap:10px; background:var(--panel-bg); border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:16px;}
+  .project-form.open{display:flex;}
+  .project-form .field-row{display:flex; gap:10px; flex-wrap:wrap;}
+  .project-form label{font-size:11.5px; color:var(--text-faint); font-weight:600; text-transform:uppercase; letter-spacing:.03em; display:block; margin-bottom:5px;}
+  .project-form .field{flex:1; min-width:160px;}
+  .project-form input, .project-form select, .project-form textarea{
+    width:100%; background:var(--input-bg); border:1px solid var(--line); border-radius:10px;
+    padding:10px 12px; color:var(--text); font-size:13.5px; font-family:inherit;
+  }
+  .project-form textarea{resize:vertical; min-height:64px;}
+  .project-form .form-actions{display:flex; gap:8px; justify-content:flex-end; margin-top:2px;}
+  .btn-ghost{background:transparent; border:1px solid var(--line); color:var(--text-mute); border-radius:9px; padding:8px 14px; font-size:12.5px; font-weight:600; cursor:pointer; font-family:inherit;}
+  .btn-ghost:hover{color:var(--text); border-color:var(--text-faint);}
+  .form-error{font-size:12.5px; color:var(--danger); min-height:16px;}
+
+  .projects-list{display:flex; flex-direction:column; gap:10px;}
+  .project-item{background:var(--panel-bg); border:1px solid var(--line); border-radius:14px; padding:14px 16px;}
+  .project-item .p-top{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;}
+  .project-item .p-name{font-size:14.5px; font-weight:700;}
+  .p-status{font-size:11px; font-weight:700; padding:3px 10px; border-radius:99px; white-space:nowrap;}
+  .project-item .p-desc{font-size:13px; color:var(--text-mute); margin-top:6px; line-height:1.5;}
+  .project-item .p-link{font-size:12px; color:var(--primary-light); margin-top:6px; display:inline-block; word-break:break-all;}
+  .project-item .p-link:hover{text-decoration:underline;}
+  .project-item .p-actions{display:flex; gap:8px; margin-top:10px;}
+  .icon-btn{background:transparent; border:1px solid var(--line); color:var(--text-mute); border-radius:8px; padding:5px 11px; font-size:11.5px; font-weight:600; cursor:pointer; font-family:inherit;}
+  .icon-btn:hover{color:var(--text); border-color:var(--text-faint);}
+  .icon-btn.danger:hover{color:var(--danger); border-color:var(--danger);}
+
+  .plan-row{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+    background:var(--panel-bg); border:1px solid var(--line); border-radius:14px; padding:14px 16px; margin-bottom:10px;}
+  .plan-row .p-info .p-plan-name{font-size:14.5px; font-weight:700;}
+  .plan-row .p-info .p-plan-sub{font-size:12px; color:var(--text-faint); margin-top:2px;}
+  .plan-status-tag{font-size:11px; font-weight:700; padding:3px 10px; border-radius:99px; white-space:nowrap;}
+  .subscribe-options{display:flex; gap:10px; flex-wrap:wrap;}
+  .subscribe-card{flex:1; min-width:150px; background:var(--panel-bg); border:1px solid var(--line); border-radius:14px; padding:16px; text-align:center;}
+  .subscribe-card .sc-name{font-weight:700; font-size:14px;}
+  .subscribe-card .sc-price{font-size:20px; font-weight:800; font-family:'Geist',sans-serif; margin:6px 0;}
+  .subscribe-card .sc-price span{font-size:11px; font-weight:600; color:var(--text-faint);}
+  .subscribe-card button{width:100%; margin-top:8px;}
+
+  #toasts{position:fixed; top:18px; right:18px; z-index:50; display:flex; flex-direction:column; gap:10px; max-width:320px;}
+  .toast{background:var(--card); border:1px solid var(--card-line); border-radius:12px; padding:13px 16px;
+    box-shadow:0 12px 30px rgba(0,0,0,.35); font-size:13px; display:flex; gap:10px; align-items:flex-start;
+    animation:toast-in .25s ease; color:var(--text);}
+  .toast .t-icon{font-size:16px;}
+  .toast .t-title{font-weight:700; margin-bottom:2px;}
+  .toast .t-msg{color:var(--text-mute); font-size:12.5px;}
+  @keyframes toast-in{from{opacity:0; transform:translateX(20px);} to{opacity:1; transform:translateX(0);}}
+  .toast.leaving{animation:toast-out .2s ease forwards;}
+  @keyframes toast-out{to{opacity:0; transform:translateX(20px);}}
+
+  /* ---------- Responsividade mobile ---------- */
+  @media (max-width:480px){
+    header{padding:14px 16px;}
+    .brand span{font-size:14px;}
+    .head-actions{gap:8px;}
+    .head-actions a, .head-actions button:not(.theme-toggle){font-size:12px;}
+    .theme-toggle{width:34px; height:34px; font-size:14px;}
+
+    main{padding:20px 14px 60px;}
+    .hello h1{font-size:20px;}
+    .hello p{font-size:13px;}
+
+    .card{padding:16px;}
+    .stat-row .num{font-size:28px;}
+
+    #toasts{left:12px; right:12px; top:12px; max-width:none;}
+
+    .project-form .field{min-width:0; flex:1 1 100%;}
+    .subscribe-card{min-width:0; flex:1 1 100%;}
+
+    .referral-box{flex-wrap:wrap;}
+    .referral-box input{min-width:0; flex:1 1 100%;}
+    .copy-btn{flex:1 1 100%;}
+
+    .name-edit{flex-wrap:wrap;}
+    .name-edit input{flex:1 1 100%;}
+    .name-edit button{flex:1 1 100%;}
+  }
+
+  @media (max-width:360px){
+    .head-actions a{display:none;} /* "Site" some em telas muito pequenas, cabe no menu se precisar depois */
+    .badges-grid{grid-template-columns:repeat(auto-fill, minmax(64px, 1fr));}
+  }
+</style>
+</head>
+<body>
+
+<div class="glow-a"></div>
+<div class="glow-b"></div>
+<div id="toasts"></div>
+
+<header>
+  <a href="/" class="brand">
+    <div class="mark">
+      <img src="/images/icon-192.png" alt="Trem Forge" width="32" height="32" style="border-radius:9px;">
+    </div>
+    <span>Trem Forge</span>
+  </a>
+  <div class="head-actions">
+    <select class="tf-lang-switch" aria-label="Idioma / Language" style="background:var(--card-bg); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:5px 6px; font-size:12px; font-family:'Inter',sans-serif; cursor:pointer;"></select>
+    <button class="theme-toggle" id="themeToggle" type="button" title="Alternar tema" aria-label="Alternar tema" data-i18n-attr="title:painel.header.theme_toggle_title;aria-label:painel.header.theme_toggle_title">🌙</button>
+    <a href="/" data-i18n="painel.header.nav_site">Site</a>
+    <button id="logoutBtn" type="button" data-i18n="painel.header.btn_sair">Sair</button>
+  </div>
+</header>
+
+<main>
+  <div class="skeleton" id="skeleton" data-i18n="painel.loading.skeleton">Carregando seu painel...</div>
+
+  <div id="dashboard">
+    <div class="hello">
+      <h1 id="helloName">Olá 👋</h1>
+      <p id="helloSub">Aqui está o resumo da sua conta.</p>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2 data-i18n="painel.streak.title">Sequência de acesso</h2>
+        <div class="stat-row"><span class="num" id="streakNum">0</span><span class="unit" data-i18n="painel.streak.unit">dia(s) seguidos</span></div>
+        <div class="streak-flames" id="streakFlames"></div>
+        <div class="stat-sub" id="streakSub"></div>
+      </div>
+
+      <div class="card">
+        <h2 data-i18n="painel.coins.title">Créditos</h2>
+        <div class="stat-row"><span class="num" id="coinsNum">0</span><span class="unit" data-i18n="painel.coins.unit">créditos</span></div>
+        <div class="stat-sub" data-i18n="painel.coins.sub">Ganhe créditos completando o checklist e indicando amigos.</div>
+        <a href="/checkout.html" class="mini-btn" style="display:inline-block; margin-top:12px; text-decoration:none;" data-i18n="painel.coins.btn_buy">Comprar créditos</a>
+      </div>
+
+      <div class="card full" id="planCard">
+        <h2 data-i18n="painel.plan.title">Assinatura</h2>
+        <div class="plan-row">
+          <div class="p-info">
+            <div class="p-plan-name" id="planName" data-i18n="painel.plan.free_name">Free</div>
+            <div class="p-plan-sub" id="planSub" data-i18n="painel.plan.free_sub">Sem cobrança recorrente.</div>
+          </div>
+          <span class="plan-status-tag" id="planStatusTag"></span>
+        </div>
+        <div class="subscribe-options" id="subscribeOptions"></div>
+      </div>
+
+      <div class="card full">
+        <div class="card-head-row">
+          <h2 data-i18n="painel.projects.title">Meus projetos</h2>
+          <button class="add-btn" id="newProjectBtn" type="button" data-i18n="painel.projects.btn_new">+ Novo projeto</button>
+        </div>
+
+        <div class="project-form" id="projectForm">
+          <input type="hidden" id="pfId" value="">
+          <div class="field-row">
+            <div class="field">
+              <label for="pfName" data-i18n="painel.projects.label_name">Nome do projeto</label>
+              <input type="text" id="pfName" maxlength="80" placeholder="Ex.: Loja virtual da minha marca" data-i18n-placeholder="painel.projects.ph_name">
+            </div>
+            <div class="field">
+              <label for="pfStatus" data-i18n="painel.projects.label_status">Status</label>
+              <select id="pfStatus">
+                <option value="ideia" data-i18n="painel.projects.status_ideia">Ideia</option>
+                <option value="em_andamento" data-i18n="painel.projects.status_em_andamento">Em andamento</option>
+                <option value="pausado" data-i18n="painel.projects.status_pausado">Pausado</option>
+                <option value="concluido" data-i18n="painel.projects.status_concluido">Concluído</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="pfLink" data-i18n="painel.projects.label_link">Link (opcional)</label>
+            <input type="text" id="pfLink" maxlength="300" placeholder="https://..." data-i18n-placeholder="painel.projects.ph_link">
+          </div>
+          <div class="field">
+            <label for="pfDesc" data-i18n="painel.projects.label_desc">Descrição (opcional)</label>
+            <textarea id="pfDesc" maxlength="500" placeholder="Do que se trata esse projeto?" data-i18n-placeholder="painel.projects.ph_desc"></textarea>
+          </div>
+          <div class="form-error" id="pfError"></div>
+          <div class="form-actions">
+            <button class="btn-ghost" id="pfCancel" type="button" data-i18n="painel.projects.btn_cancel">Cancelar</button>
+            <button class="mini-btn" id="pfSave" type="button" data-i18n="painel.projects.btn_save">Salvar projeto</button>
+          </div>
+        </div>
+
+        <div class="projects-list" id="projectsList"></div>
+      </div>
+
+      <div class="card full">
+        <h2 data-i18n="painel.onboarding.title">Primeiros passos</h2>
+        <div class="progress-track"><div class="progress-fill" id="onboardProgress" style="width:0%"></div></div>
+        <div class="stat-sub" id="onboardSub" style="margin-bottom:14px;"></div>
+        <div class="checklist" id="checklist"></div>
+      </div>
+
+      <div class="card full">
+        <h2 data-i18n="painel.badges.title">Insígnias</h2>
+        <div class="badges-grid" id="badgesGrid"></div>
+      </div>
+
+      <div class="card">
+        <h2 data-i18n="painel.referral.title">Indique um amigo</h2>
+        <p class="stat-sub" style="margin-bottom:0;" data-i18n="painel.referral.desc">Compartilhe seu link. Você ganha 50 créditos e quem entrar ganha 20.</p>
+        <div class="referral-box">
+          <input type="text" id="referralLink" readonly>
+          <button class="copy-btn" id="copyReferral" type="button" data-i18n="painel.referral.btn_copy">Copiar</button>
+        </div>
+        <div class="referral-sub" id="referralStats"></div>
+      </div>
+
+      <div class="card">
+        <h2 data-i18n="painel.profile.title">Perfil</h2>
+        <p class="stat-sub" style="margin-bottom:0;" data-i18n="painel.profile.label_display_name">Nome de exibição</p>
+        <div class="name-edit">
+          <input type="text" id="nameInput" maxlength="60">
+          <button class="mini-btn" id="saveNameBtn" type="button" data-i18n="painel.profile.btn_save">Salvar</button>
+        </div>
+        <p class="stat-sub" style="margin:14px 0 0;" data-i18n="painel.profile.label_phone">Celular (opcional — pra recuperar senha por SMS)</p>
+        <div class="name-edit">
+          <input type="tel" id="phoneInput" placeholder="(11) 91234-5678" data-i18n-placeholder="painel.profile.ph_phone">
+          <button class="mini-btn" id="savePhoneBtn" type="button" data-i18n="painel.profile.btn_save">Salvar</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 data-i18n="painel.security.title">Segurança</h2>
+        <p class="stat-sub" id="twofaStatus" style="margin-bottom:10px;">Verificação em duas etapas: —</p>
+        <button class="mini-btn" id="twofaToggleBtn" type="button" data-i18n="painel.security.btn_enable">Ativar</button>
+        <div class="twofa-confirm" id="twofaConfirm">
+          <input type="password" id="twofaPassword" class="mini-input" style="width:100%;" placeholder="Confirme sua senha" data-i18n-placeholder="painel.security.ph_password">
+          <div class="form-actions">
+            <button class="btn-ghost" id="twofaCancelBtn" type="button" data-i18n="painel.security.btn_cancel">Cancelar</button>
+            <button class="mini-btn" id="twofaConfirmBtn" type="button" data-i18n="painel.security.btn_confirm">Confirmar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card full">
+        <h2 data-i18n="painel.activity.title">Atividade recente</h2>
+        <div class="activity-list" id="activityList"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="/js/i18n.js"></script>
+<script>
+(function(){
+  var state = { user: null };
+
+  // ---------- Tema claro/escuro ----------
+  (function initTheme(){
+    var saved = localStorage.getItem('tf_theme');
+    var toggle = document.getElementById('themeToggle');
+    function apply(theme){
+      if (theme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+        toggle.textContent = '☀️';
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+        toggle.textContent = '🌙';
+      }
+    }
+    apply(saved || 'dark');
+    toggle.addEventListener('click', function(){
+      var isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      var next = isLight ? 'dark' : 'light';
+      apply(next);
+      localStorage.setItem('tf_theme', next);
+    });
+  })();
+
+  // ---------- i18n helper ----------
+  // Aceita `vars` pra templates com {placeholder}. Se a chave não existir
+  // no dicionário carregado (ou o módulo i18n ainda não tiver montado),
+  // cai pro `fallback` em pt-BR e ainda assim substitui os placeholders,
+  // pra nunca vazar "{plan}" cru na tela.
+  function T(key, fallback, vars){
+    var dict = window.TremForgeI18n;
+    var text = dict ? dict.t(key, vars) : null;
+    if (text == null || text === key) {
+      text = fallback != null ? fallback : key;
+      if (vars) {
+        Object.keys(vars).forEach(function(k){
+          text = text.split('{' + k + '}').join(vars[k]);
+        });
+      }
+    }
+    return text;
+  }
+
+  // ---------- Toasts ----------
+  function notify(title, msg, icon){
+    var box = document.getElementById('toasts');
+    var el = document.createElement('div');
+    el.className = 'toast';
+    el.innerHTML = '<div class="t-icon">' + (icon || '🔔') + '</div>' +
+      '<div><div class="t-title"></div><div class="t-msg"></div></div>';
+    el.querySelector('.t-title').textContent = title;
+    el.querySelector('.t-msg').textContent = msg || '';
+    box.appendChild(el);
+    setTimeout(function(){
+      el.classList.add('leaving');
+      setTimeout(function(){ el.remove(); }, 220);
+    }, 4200);
+  }
+  window.notify = notify;
+
+  function badgeCatalog(){
+    return [
+      { id:'boas_vindas', name:T('painel.badges.boas_vindas','Boas-vindas'), icon:'👋' },
+      { id:'streak_3', name:T('painel.badges.streak_3','3 dias seguidos'), icon:'🔥' },
+      { id:'streak_7', name:T('painel.badges.streak_7','7 dias seguidos'), icon:'🚀' },
+      { id:'streak_30', name:T('painel.badges.streak_30','30 dias seguidos'), icon:'🏆' },
+      { id:'indicou_amigo', name:T('painel.badges.indicou_amigo','Indicou um amigo'), icon:'🤝' },
+      { id:'primeiro_projeto', name:T('painel.badges.primeiro_projeto','Primeiro projeto'), icon:'🧩' },
+    ];
+  }
+
+  // Mapa auxiliar id -> {name, icon} usado pra montar a linha de
+  // "Insígnia desbloqueada: 🏅 Nome" no feed de atividade, no idioma ativo.
+  function badgeById(id){
+    var found = badgeCatalog().filter(function(b){ return b.id === id; })[0];
+    return found || { name: id, icon: '🏅' };
+  }
+
+  function timeAgo(iso){
+    var diff = Date.now() - new Date(iso).getTime();
+    var min = Math.floor(diff/60000);
+    if (min < 1) return T('painel.activity.time_now','agora mesmo');
+    if (min < 60) return T('painel.activity.time_min_template','{min} min atrás').split('{min}').join(min);
+    var h = Math.floor(min/60);
+    if (h < 24) return T('painel.activity.time_hour_template','{h}h atrás').split('{h}').join(h);
+    var d = Math.floor(h/24);
+    return T('painel.activity.time_day_template','{d}d atrás').split('{d}').join(d);
+  }
+
+  var ACTIVITY_ICONS = { login:'📍', badge:'🏅', referral:'🤝', onboarding:'✅', profile:'👤', project:'🧩', security:'🔒', plan:'💳', coins:'🪙' };
+
+  // Traduz uma entrada de "Atividade recente" gerada pelo backend
+  // ({type, key, params}) pro idioma ativo. Algumas chaves precisam de
+  // resolução extra antes de virar texto:
+  //  - project_status_changed: params.status é a CHAVE do status
+  //    (ideia/em_andamento/pausado/concluido), não o texto — traduzimos
+  //    via projectStatuses() antes de montar a frase.
+  //  - badge_unlocked: params.badgeId é o id do badge — pegamos nome +
+  //    ícone traduzidos via badgeById().
+  //  - *_period_end_usd: params.dateIso é uma data ISO crua — formatamos
+  //    na localidade do idioma ativo (dateLocale()) na hora de renderizar,
+  //    em vez de vir fixa em pt-BR do backend.
+  // Atividades antigas (gravadas antes dessa mudança) não têm `key`, só
+  // `message` já pronto em pt-BR — continuam exibidas como estão, pois
+  // não há como saber retroativamente em que idioma reescrever.
+  function activityText(a){
+    if (!a.key) return a.message || '';
+
+    var params = {};
+    if (a.params) { for (var k in a.params) { if (Object.prototype.hasOwnProperty.call(a.params, k)) params[k] = a.params[k]; } }
+
+    if (a.key === 'project_status_changed' && params.status) {
+      var statuses = projectStatuses();
+      params.status = (statuses[params.status] && statuses[params.status].label) || params.status;
+    }
+
+    if (a.key === 'badge_unlocked' && params.badgeId) {
+      var b = badgeById(params.badgeId);
+      params.icon = b.icon;
+      params.name = b.name;
+    }
+
+    if (params.dateIso) {
+      params.date = new Date(params.dateIso).toLocaleDateString(dateLocale());
+    }
+
+    return T('painel.activity.log.' + a.key, a.message || a.key, params);
+  }
+
+  function projectStatuses(){
+    return {
+      ideia:        { label:T('painel.projects.status_ideia','Ideia'),         color:'#8C7C6E' },
+      em_andamento: { label:T('painel.projects.status_em_andamento','Em andamento'),  color:'#FF9556' },
+      pausado:      { label:T('painel.projects.status_pausado','Pausado'),       color:'#F87171' },
+      concluido:    { label:T('painel.projects.status_concluido','Concluído'),     color:'#34D399' },
+    };
+  }
+
+  var PLAN_CONFIG = {
+    pro:      { label:'Pro',      priceBRL:49,  priceUSD:9 },
+    business: { label:'Business', priceBRL:199, priceUSD:39 },
+  };
+  function planStatusLabels(){
+    return {
+      pending:  { label:T('painel.plan.status_pending','Aguardando pagamento'), color:'#FF9556' },
+      active:   { label:T('painel.plan.status_active','Ativa'),                color:'#34D399' },
+      paused:   { label:T('painel.plan.status_paused','Pausada'),               color:'#F87171' },
+      canceled: { label:T('painel.plan.status_canceled','Cancelada'),             color:'#8C7C6E' },
+    };
+  }
+
+  function render(user){
+    state.user = user;
+    document.getElementById('skeleton').style.display = 'none';
+    document.getElementById('dashboard').classList.add('ready');
+
+    var firstName = (user.name || T('painel.hello.default_name','você')).split(' ')[0];
+    document.getElementById('helloName').textContent = T('painel.hello.greeting_template','Olá, {name} 👋').split('{name}').join(firstName);
+    document.getElementById('helloSub').textContent = user.email;
+
+    // Streak
+    document.getElementById('streakNum').textContent = user.streak || 0;
+    var flames = document.getElementById('streakFlames');
+    flames.innerHTML = '';
+    for (var i = 1; i <= 7; i++){
+      var f = document.createElement('div');
+      f.className = 'flame' + (i <= (user.streak||0) ? ' lit' : '');
+      f.textContent = i <= (user.streak||0) ? '🔥' : '';
+      flames.appendChild(f);
+    }
+    var nextGoal = user.streak >= 30 ? null : (user.streak >= 7 ? 30 : (user.streak >= 3 ? 7 : 3));
+    document.getElementById('streakSub').textContent = nextGoal
+      ? T('painel.streak.next_template','Faltam {n} dia(s) para a próxima insígnia.').split('{n}').join(nextGoal - user.streak)
+      : T('painel.streak.maxed','Sequência máxima de insígnias alcançada. 🏆');
+
+    // Coins
+    document.getElementById('coinsNum').textContent = user.coinsBalance || 0;
+
+    // Projetos
+    renderProjects(user.projects || []);
+
+    // Assinatura
+    renderPlan(user);
+
+    // Onboarding checklist
+    var onboarding = user.onboarding || {};
+    var nameComplete = String(user.name||'').trim().split(/\s+/).length >= 2;
+    var steps = [
+      { id:'account', label:T('painel.onboarding.step_account','Criar sua conta'), done:true, reward:null },
+      { id:'profile', label:T('painel.onboarding.step_profile','Completar o perfil (nome e sobrenome)'), done: !!onboarding.profile, reward:'+30', claimable: nameComplete && !onboarding.profile },
+      { id:'referral', label:T('painel.onboarding.step_referral','Indicar um amigo'), done: (user.referralCount||0) > 0, reward:'+50', claimable:false },
+    ];
+    var doneCount = steps.filter(function(s){ return s.done; }).length;
+    document.getElementById('onboardProgress').style.width = Math.round(doneCount/steps.length*100) + '%';
+    document.getElementById('onboardSub').textContent = T('painel.onboarding.sub_template','{done} de {total} concluídos').split('{done}').join(doneCount).split('{total}').join(steps.length);
+
+    var cl = document.getElementById('checklist');
+    cl.innerHTML = '';
+    steps.forEach(function(s){
+      var row = document.createElement('div');
+      row.className = 'check-item' + (s.done ? ' done' : '');
+      var right = s.reward ? '<span class="reward">' + s.reward + '</span>' : '';
+      if (s.claimable) {
+        var claimLabel = T('painel.onboarding.btn_claim_template','Resgatar {reward}').split('{reward}').join(s.reward);
+        right = '<button class="mini-btn" data-claim="' + s.id + '">' + escapeHtml(claimLabel) + '</button>';
+      }
+      row.innerHTML = '<div class="left"><span class="check-dot">' + (s.done ? '✓' : '') + '</span>' + escapeHtml(s.label) + '</div>' + right;
+      cl.appendChild(row);
+    });
+    cl.querySelectorAll('[data-claim]').forEach(function(btn){
+      btn.addEventListener('click', function(){ claimStep(btn.getAttribute('data-claim'), btn); });
+    });
+
+    // Badges
+    var grid = document.getElementById('badgesGrid');
+    grid.innerHTML = '';
+    var earnedIds = (user.badges||[]).map(function(b){ return b.id; });
+    badgeCatalog().forEach(function(b){
+      var earned = earnedIds.indexOf(b.id) !== -1;
+      var el = document.createElement('div');
+      el.className = 'badge' + (earned ? '' : ' locked');
+      el.title = b.name;
+      el.innerHTML = '<div>' + b.icon + '</div><span class="label">' + escapeHtml(b.name) + '</span>';
+      grid.appendChild(el);
+    });
+
+    // Referral
+    var link = window.location.origin + '/login.html?ref=' + (user.referralCode || '');
+    document.getElementById('referralLink').value = link;
+    document.getElementById('referralStats').textContent = T('painel.referral.stats_template','{count} amigo(s) indicado(s) até agora.').split('{count}').join(user.referralCount||0);
+
+    // Profile name field
+    var nameInput = document.getElementById('nameInput');
+    if (document.activeElement !== nameInput) nameInput.value = user.name || '';
+
+    // Profile phone field
+    var phoneInput = document.getElementById('phoneInput');
+    if (document.activeElement !== phoneInput) phoneInput.value = user.phone || '';
+
+    // Segurança (2FA)
+    var twofaOn = !!user.twoFactorEnabled;
+    var twofaStatusWord = twofaOn ? T('painel.security.status_on','ativada ✅') : T('painel.security.status_off','desativada');
+    document.getElementById('twofaStatus').textContent = T('painel.security.status_template','Verificação em duas etapas: {status}').split('{status}').join(twofaStatusWord);
+    document.getElementById('twofaToggleBtn').textContent = twofaOn ? T('painel.security.btn_disable','Desativar') : T('painel.security.btn_enable','Ativar');
+
+    // Activity
+    var list = document.getElementById('activityList');
+    list.innerHTML = '';
+    var acts = user.activity || [];
+    if (!acts.length) {
+      list.innerHTML = '<div class="empty-note">' + escapeHtml(T('painel.activity.empty','Nenhuma atividade ainda.')) + '</div>';
+    } else {
+      acts.slice(0, 15).forEach(function(a){
+        var item = document.createElement('div');
+        item.className = 'activity-item';
+        item.innerHTML = '<div class="icon">' + (ACTIVITY_ICONS[a.type] || '•') + '</div>' +
+          '<div><div>' + escapeHtml(activityText(a)) + '</div><div class="when">' + timeAgo(a.at) + '</div></div>';
+        list.appendChild(item);
+      });
+    }
+  }
+
+  // ---------- Assinatura (Mercado Pago / Stripe) ----------
+  function dateLocale(){
+    var l = (window.TremForgeI18n && window.TremForgeI18n.getLang()) || 'pt-BR';
+    var map = { 'pt-BR':'pt-BR', en:'en-US', es:'es-ES', fr:'fr-FR', de:'de-DE', it:'it-IT', zh:'zh-CN', ja:'ja-JP' };
+    return map[l] || 'pt-BR';
+  }
+
+  function renderPlan(user){
+    var isActive = user.planStatus === 'active' || user.planStatus === 'pending';
+    var planKey = user.plan;
+    var cfg = planKey ? PLAN_CONFIG[planKey] : null;
+
+    document.getElementById('planName').textContent = cfg ? cfg.label : T('painel.plan.free_name','Free');
+    var tag = document.getElementById('planStatusTag');
+    var statusLabels = planStatusLabels();
+    if (cfg && user.planStatus && statusLabels[user.planStatus]) {
+      var st = statusLabels[user.planStatus];
+      tag.style.display = '';
+      tag.textContent = st.label;
+      tag.style.background = st.color + '22';
+      tag.style.color = st.color;
+      var baseSub = user.planProvider === 'mercadopago'
+        ? T('painel.plan.sub_mercadopago_template','Cobrança recorrente via Mercado Pago (R$ {price}/mês).').split('{price}').join(cfg.priceBRL)
+        : user.planProvider === 'stripe'
+          ? T('painel.plan.sub_stripe_template','Cobrança recorrente via Stripe (US$ {price}/mês).').split('{price}').join(cfg.priceUSD)
+          : T('painel.plan.sub_active_generic','Cobrança recorrente ativa.');
+      if (user.planStatus === 'active' && user.cancelAtPeriodEnd) {
+        var cancelDateLabel = user.planCancelAt
+          ? new Date(user.planCancelAt).toLocaleDateString(dateLocale())
+          : T('painel.plan.cancel_date_fallback','o fim do ciclo atual');
+        baseSub += T('painel.plan.cancel_suffix_template',' Cancelada — acesso até {date}, não vai renovar.').split('{date}').join(cancelDateLabel);
+      }
+      document.getElementById('planSub').textContent = baseSub;
+    } else {
+      tag.style.display = 'none';
+      document.getElementById('planSub').textContent = T('painel.plan.free_sub','Sem cobrança recorrente.');
+    }
+
+    var box = document.getElementById('subscribeOptions');
+    box.innerHTML = '';
+    if (isActive) {
+      if (user.planStatus === 'active' && user.cancelAtPeriodEnd) {
+        var reactivateBtn = document.createElement('button');
+        reactivateBtn.type = 'button';
+        reactivateBtn.className = 'mini-btn';
+        reactivateBtn.textContent = T('painel.plan.btn_reactivate','Reativar assinatura');
+        reactivateBtn.addEventListener('click', function(){ reactivateSubscription(reactivateBtn); });
+        box.appendChild(reactivateBtn);
+      } else {
+        var cancelBtn = document.createElement('button');
+        cancelBtn.type = 'button';
+        cancelBtn.className = 'mini-btn btn-danger-outline';
+        cancelBtn.textContent = T('painel.plan.btn_cancel','Cancelar assinatura');
+        cancelBtn.addEventListener('click', function(){ cancelSubscription(cancelBtn, user.planProvider); });
+        box.appendChild(cancelBtn);
+      }
+      return; // já tem assinatura ativa/pendente, não mostra opções de assinar de novo
+    }
+
+    Object.keys(PLAN_CONFIG).forEach(function(key){
+      var p = PLAN_CONFIG[key];
+      var card = document.createElement('div');
+      card.className = 'subscribe-card';
+      var subscribeLabel = T('painel.plan.btn_subscribe_template','Assinar {plan}').split('{plan}').join(p.label);
+      card.innerHTML = '<div class="sc-name">' + escapeHtml(p.label) + '</div>' +
+        '<div class="sc-price">R$ ' + p.priceBRL + '<span>' + escapeHtml(T('painel.plan.per_month','/mês')) + '</span></div>' +
+        '<button class="mini-btn" data-subscribe="' + key + '" data-provider="mercadopago" type="button">' + escapeHtml(subscribeLabel) + '</button>' +
+        '<div class="sc-price" style="margin-top:8px;">US$ ' + p.priceUSD + '<span>' + escapeHtml(T('painel.plan.per_month','/mês')) + '</span></div>' +
+        '<button class="mini-btn" data-subscribe="' + key + '" data-provider="stripe" type="button">' + escapeHtml(T('painel.plan.btn_stripe','Pagar em US$ (Stripe)')) + '</button>';
+      box.appendChild(card);
+    });
+    box.querySelectorAll('[data-subscribe]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        subscribeToPlan(btn.getAttribute('data-subscribe'), btn.getAttribute('data-provider'), btn);
+      });
+    });
+  }
+
+  function subscribeToPlan(planKey, provider, btn){
+    btn.disabled = true;
+    btn.textContent = T('painel.plan.btn_redirecting','Redirecionando...');
+    var endpoint = provider === 'stripe' ? '/.netlify/functions/stripe-subscribe' : '/.netlify/functions/mp-subscribe';
+    fetch(endpoint, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ plan: planKey }),
+    })
+      .then(function(r){ return r.json().then(function(d){ return {ok:r.ok, data:d}; }); })
+      .then(function(res){
+        if (!res.ok || !res.data.checkoutUrl){
+          notify(T('painel.plan.toast_subscribe_error_title','Não foi possível iniciar a assinatura'), res.data.error || '', '⚠️');
+          btn.disabled = false;
+          btn.textContent = provider === 'stripe' ? T('painel.plan.btn_stripe','Pagar em US$ (Stripe)') : T('painel.plan.btn_subscribe_template','Assinar {plan}').split('{plan}').join((PLAN_CONFIG[planKey] || {}).label || '');
+          return;
+        }
+        window.location.href = res.data.checkoutUrl;
+      })
+      .catch(function(){
+        notify(T('common.erro_conexao','Erro de conexão. Tente novamente.'), '', '⚠️');
+        btn.disabled = false;
+      });
+  }
+
+  function cancelSubscription(btn, provider){
+    var confirmMsg = provider === 'stripe'
+      ? T('painel.plan.confirm_cancel_stripe','Cancelar sua assinatura? Você continua com acesso Pro até o fim do ciclo já pago, só não vai renovar depois.')
+      : T('painel.plan.confirm_cancel_generic','Cancelar sua assinatura? Você perde o acesso aos recursos do plano pago.');
+    if (!window.confirm(confirmMsg)) return;
+    btn.disabled = true;
+    btn.textContent = T('painel.plan.btn_canceling','Cancelando...');
+    var endpoint = provider === 'stripe' ? '/.netlify/functions/stripe-cancel' : '/.netlify/functions/mp-cancel';
+    fetch(endpoint, { method:'POST' })
+      .then(function(r){ return r.json().then(function(d){ return {ok:r.ok, data:d}; }); })
+      .then(function(res){
+        if (!res.ok){
+          notify(T('painel.plan.toast_cancel_error_title','Não foi possível cancelar'), res.data.error || '', '⚠️');
+          btn.disabled = false;
+          btn.textContent = T('painel.plan.btn_cancel','Cancelar assinatura');
+          return;
+        }
+        // Mostra a confirmação ANTES de tentar redesenhar a tela: o
+        // cancelamento já está confirmado e salvo no servidor nesse ponto,
+        // então o usuário precisa saber disso mesmo que o passo de
+        // re-renderização abaixo falhe por qualquer motivo.
+        var successMsg = provider === 'stripe'
+          ? T('painel.plan.cancel_success_stripe','Você continua com acesso até o fim do ciclo atual.')
+          : T('painel.plan.cancel_success_generic','Você não será mais cobrado.');
+        notify(T('painel.plan.toast_canceled_title','Assinatura cancelada'), successMsg, '✅');
+        try {
+          if (res.data.user) render(res.data.user);
+        } catch (renderErr) {
+          console.error('Falha ao redesenhar o painel após cancelar (o cancelamento em si foi bem-sucedido):', renderErr);
+          // Fallback: busca o estado real direto do servidor, já que o
+          // render() local com os dados da resposta falhou.
+          fetch('/.netlify/functions/auth-me')
+            .then(function(r){ return r.json(); })
+            .then(function(fresh){ if (fresh.user) render(fresh.user); })
+            .catch(function(){});
+        }
+      })
+      .catch(function(){
+        notify(T('common.erro_conexao','Erro de conexão. Tente novamente.'), '', '⚠️');
+        btn.disabled = false;
+        btn.textContent = T('painel.plan.btn_cancel','Cancelar assinatura');
+      });
+  }
+
+  function reactivateSubscription(btn){
+    btn.disabled = true;
+    btn.textContent = T('painel.plan.btn_reactivating','Reativando...');
+    fetch('/.netlify/functions/stripe-reactivate', { method:'POST' })
+      .then(function(r){ return r.json().then(function(d){ return {ok:r.ok, data:d}; }); })
+      .then(function(res){
+        if (!res.ok){
+          notify(T('painel.plan.toast_reactivate_error_title','Não foi possível reativar'), res.data.error || '', '⚠️');
+          btn.disabled = false;
+          btn.textContent = T('painel.plan.btn_reactivate','Reativar assinatura');
+          return;
+        }
+        notify(T('painel.plan.toast_reactivated_title','Assinatura reativada'), T('painel.plan.toast_reactivated_msg','Vai continuar renovando normalmente.'), '🎉');
+        try {
+          if (res.data.user) render(res.data.user);
+        } catch (renderErr) {
+          console.error('Falha ao redesenhar o painel após reativar:', renderErr);
+          fetch('/.netlify/functions/auth-me')
+            .then(function(r){ return r.json(); })
+            .then(function(fresh){ if (fresh.user) render(fresh.user); })
+            .catch(function(){});
+        }
+      })
+      .catch(function(){
+        notify(T('common.erro_conexao','Erro de conexão. Tente novamente.'), '', '⚠️');
+        btn.disabled = false;
+        btn.textContent = T('painel.plan.btn_reactivate','Reativar assinatura');
+      });
+  }
+
+  // ---------- Projetos (CRUD) ----------
+  function escapeHtml(s){
+    return String(s || '').replace(/[&<>"']/g, function(c){
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
+
+  function renderProjects(projects){
+    var list = document.getElementById('projectsList');
+    list.innerHTML = '';
+    if (!projects.length) {
+      list.innerHTML = '<div class="empty-note">' + escapeHtml(T('painel.projects.empty','Nenhum projeto cadastrado ainda. Clique em "Novo projeto" para começar.')) + '</div>';
+      return;
+    }
+    var statuses = projectStatuses();
+    projects.forEach(function(p){
+      var st = statuses[p.status] || { label: p.status, color: '#8C7C6E' };
+      var el = document.createElement('div');
+      el.className = 'project-item';
+      var html = '<div class="p-top">' +
+        '<div class="p-name">' + escapeHtml(p.name) + '</div>' +
+        '<span class="p-status" style="background:' + st.color + '22; color:' + st.color + ';">' + escapeHtml(st.label) + '</span>' +
+        '</div>';
+      if (p.description) html += '<div class="p-desc">' + escapeHtml(p.description) + '</div>';
+      if (p.link) html += '<a class="p-link" href="' + escapeHtml(p.link) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(p.link) + '</a>';
+      html += '<div class="p-actions">' +
+        '<button class="icon-btn" data-edit="' + p.id + '" type="button">' + escapeHtml(T('painel.projects.btn_edit','Editar')) + '</button>' +
+        '<button class="icon-btn danger" data-del="' + p.id + '" type="button">' + escapeHtml(T('painel.projects.btn_delete','Excluir')) + '</button>' +
+        '</div>';
+      el.innerHTML = html;
+      list.appendChild(el);
+    });
+    list.querySelectorAll('[data-edit]').forEach(function(btn){
+      btn.addEventListener('click', function(){ openProjectForm(btn.getAttribute('data-edit')); });
+    });
+    list.querySelectorAll('[data-del]').forEach(function(btn){
+      btn.addEventListener('click', function(){ deleteProject(btn.getAttribute('data-del')); });
+    });
+  }
+
+  function findProject(id){
+    return (state.user && state.user.projects || []).find(function(p){ return p.id === id; });
+  }
+
+  function openProjectForm(id){
+    var form = document.getElementById('projectForm');
+    var err = document.getElementById('pfError');
+    err.textContent = '';
+    if (id) {
+      var p = findProject(id);
+      if (!p) return;
+      document.getElementById('pfId').value = p.id;
+      document.getElementById('pfName').value = p.name || '';
+      document.getElementById('pfStatus').value = p.status || 'ideia';
+      document.getElementById('pfLink').value = p.link || '';
+      document.getElementById('pfDesc').value = p.description || '';
+      document.getElementById('pfSave').textContent = T('painel.projects.btn_update','Atualizar projeto');
+    } else {
+      document.getElementById('pfId').value = '';
+      document.getElementById('pfName').value = '';
+      document.getElementById('pfStatus').value = 'ideia';
+      document.getElementById('pfLink').value = '';
+      document.getElementById('pfDesc').value = '';
+      document.getElementById('pfSave').textContent = T('painel.projects.btn_save','Salvar projeto');
+    }
+    form.classList.add('open');
+    document.getElementById('pfName').focus();
+  }
+
+  function closeProjectForm(){
+    document.getElementById('projectForm').classList.remove('open');
+    document.getElementById('pfError').textContent = '';
+  }
+
+  document.getElementById('newProjectBtn').addEventListener('click', function(){
+    var form = document.getElementById('projectForm');
+    if (form.classList.contains('open') && !document.getElementById('pfId').value) {
+      closeProjectForm();
+    } else {
+      openProjectForm(null);
+    }
+  });
+  document.getElementById('pfCancel').addEventListener('click', closeProjectForm);
+
+  document.getElementById('pfSave').addEventListener('click', function(){
+    var id = document.getElementById('pfId').value;
+    var payload = {
+      id: id || undefined,
+      name: document.getElementById('pfName').value.trim(),
+      status: document.getElementById('pfStatus').value,
+      link: document.getElementById('pfLink').value.trim(),
+      description: document.getElementById('pfDesc').value.trim(),
+    };
+    var err = document.getElementById('pfError');
+    err.textContent = '';
+    if (payload.name.length < 2) { err.textContent = T('painel.projects.error_name_required','Dê um nome ao projeto.'); return; }
+
+    var btn = document.getElementById('pfSave');
+    btn.disabled = true;
+    var url = id ? '/.netlify/functions/projects-update' : '/.netlify/functions/projects-create';
+    fetch(url, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload),
+    })
+      .then(function(r){ return r.json().then(function(d){ return {ok:r.ok, data:d}; }); })
+      .then(function(res){
+        btn.disabled = false;
+        if (!res.ok){ err.textContent = res.data.error || T('painel.projects.error_save_generic','Não foi possível salvar o projeto.'); return; }
+        render(res.data.user);
+        closeProjectForm();
+        notify(id ? T('painel.projects.toast_updated_title','Projeto atualizado') : T('painel.projects.toast_created_title','Projeto criado'), payload.name, '🧩');
+      })
+      .catch(function(){ btn.disabled = false; err.textContent = T('common.erro_conexao','Erro de conexão. Tente novamente.'); });
+  });
+
+  function deleteProject(id){
+    var p = findProject(id);
+    if (!p) return;
+    if (!window.confirm(T('painel.projects.confirm_delete_template','Excluir o projeto "{name}"? Essa ação não pode ser desfeita.').split('{name}').join(p.name))) return;
+    fetch('/.netlify/functions/projects-delete', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ id: id }),
+    })
+      .then(function(r){ return r.json().then(function(d){ return {ok:r.ok, data:d}; }); })
+      .then(function(res){
+        if (!res.ok){ notify(T('painel.projects.toast_delete_error_title','Não foi possível excluir'), res.data.error || '', '⚠️'); return; }
+        render(res.data.user);
+        notify(T('painel.projects.toast_deleted_title','Projeto excluído'), p.name, '🗑️');
+      })
+      .catch(function(){ notify(T('common.erro_conexao','Erro de conexão. Tente novamente.'), '', '⚠️'); });
+  }
+
+  function claimStep(step, btn){
+    btn.disabled = true;
+    btn.textContent = '...';
+    fetch('/.netlify/functions/onboarding-claim', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ step: step }),
+    })
+      .then(function(r){ return r.json().then(function(d){ return {ok:r.ok, data:d}; }); })
+      .then(function(res){
+        if (!res.ok){ notify(T('painel.onboarding.toast_claim_error_title','Não foi possível resgatar'), res.data.error || '', '⚠️'); btn.disabled=false; return; }
+        if (res.data.user) render(res.data.user);
+        notify(T('painel.onboarding.toast_claimed_title','Recompensa resgatada!'), T('painel.onboarding.toast_claimed_msg','Créditos adicionados à sua conta.'), '🎁');
+      })
+      .catch(function(){ notify(T('common.erro_conexao','Erro de conexão. Tente novamente.'), '', '⚠️'); btn.disabled = false; });
+  }
+
+  document.getElementById('copyReferral').addEventListener('click', function(){
+    var input = document.getElementById('referralLink');
+    input.select();
+    navigator.clipboard && navigator.clipboard.writeText(input.value);
+    notify(T('painel.referral.toast_copied_title','Link copiado!'), T('painel.referral.toast_copied_msg','Compartilhe com quem quiser experimentar o Trem Forge.'), '🔗');
+  });
+
+  document.getElementById('saveNameBtn').addEventListener('click', function(){
+    var input = document.getElementById('nameInput');
+    var val = input.value.trim();
+    if (val.length < 2) { notify(T('painel.profile.toast_invalid_name_title','Nome inválido'), T('painel.profile.toast_invalid_name_msg','Digite pelo menos 2 caracteres.'), '⚠️'); return; }
+    fetch('/.netlify/functions/auth-update', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ name: val }),
+    })
+      .then(function(r){ return r.json().then(function(d){ return {ok:r.ok, data:d}; }); })
+      .then(function(res){
+        if (!res.ok){ notify(T('painel.profile.toast_save_error_title','Não foi possível salvar'), res.data.error || '', '⚠️'); return; }
+        render(res.data.user);
+        notify(T('painel.profile.toast_phone_saved_title','Perfil atualizado'), T('painel.profile.toast_name_saved_msg','Seu nome foi salvo.'), '👤');
+      })
+      .catch(function(){ notify(T('common.erro_conexao','Erro de conexão. Tente novamente.'), '', '⚠️'); });
+  });
+
+  document.getElementById('savePhoneBtn').addEventListener('click', function(){
+    var input = document.getElementById('phoneInput');
+    var val = input.value.trim();
+    // Vazio é permitido (remove o telefone / desativa a opção de SMS).
+    if (val && val.replace(/\D/g,'').length < 10) {
+      notify(T('painel.profile.toast_invalid_phone_title','Telefone inválido'), T('painel.profile.toast_invalid_phone_msg','Informe DDD + número (ex: 11 91234-5678).'), '⚠️');
+      return;
+    }
+    fetch('/.netlify/functions/auth-update', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ phone: val }),
+    })
+      .then(function(r){ return r.json().then(function(d){ return {ok:r.ok, data:d}; }); })
+      .then(function(res){
+        if (!res.ok){ notify(T('painel.profile.toast_save_error_title','Não foi possível salvar'), res.data.error || '', '⚠️'); return; }
+        render(res.data.user);
+        notify(T('painel.profile.toast_phone_saved_title','Perfil atualizado'), T('painel.profile.toast_phone_saved_msg','Seu telefone foi salvo.'), '📱');
+      })
+      .catch(function(){ notify(T('common.erro_conexao','Erro de conexão. Tente novamente.'), '', '⚠️'); });
+  });
+
+  document.getElementById('twofaToggleBtn').addEventListener('click', function(){
+    document.getElementById('twofaConfirm').classList.add('open');
+    document.getElementById('twofaPassword').value = '';
+    document.getElementById('twofaPassword').focus();
+  });
+
+  document.getElementById('twofaCancelBtn').addEventListener('click', function(){
+    document.getElementById('twofaConfirm').classList.remove('open');
+  });
+
+  document.getElementById('twofaConfirmBtn').addEventListener('click', function(){
+    var pwd = document.getElementById('twofaPassword').value;
+    if (!pwd) { notify(T('painel.security.toast_password_required_title','Senha necessária'), T('painel.security.toast_password_required_msg','Confirme sua senha para continuar.'), '⚠️'); return; }
+    var enable = !state.user.twoFactorEnabled;
+    var btn = document.getElementById('twofaConfirmBtn');
+    btn.disabled = true;
+    fetch('/.netlify/functions/auth-2fa-toggle', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ enable: enable, password: pwd }),
+    })
+      .then(function(r){ return r.json().then(function(d){ return {ok:r.ok, data:d}; }); })
+      .then(function(res){
+        if (!res.ok){ notify(T('painel.security.toast_error_title','Não foi possível alterar'), res.data.error || '', '⚠️'); return; }
+        document.getElementById('twofaConfirm').classList.remove('open');
+        render(res.data.user);
+        notify(enable ? T('painel.security.toast_enabled_title','2FA ativado') : T('painel.security.toast_disabled_title','2FA desativado'),
+          enable ? T('painel.security.toast_enabled_msg','Você vai receber um código por e-mail a cada login.') : T('painel.security.toast_disabled_msg','Login voltará a exigir só a senha.'), '🔒');
+      })
+      .catch(function(){ notify(T('common.erro_conexao','Erro de conexão. Tente novamente.'), '', '⚠️'); })
+      .finally(function(){ btn.disabled = false; });
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', function(){
+    fetch('/.netlify/functions/auth-logout', { method:'POST' })
+      .finally(function(){ window.location.href = '/login.html'; });
+  });
+
+  // ---------- Load ----------
+  var prevBadgeIds = null;
+  fetch('/.netlify/functions/auth-me')
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if (!data.user) {
+        window.location.href = '/login.html?next=/painel.html';
+        return;
+      }
+      prevBadgeIds = (data.user.badges||[]).map(function(b){ return b.id; });
+      render(data.user);
+      notify(T('painel.welcome.toast_title','Bem-vindo de volta'), T('painel.welcome.toast_msg_template','Sequência atual: {streak} dia(s).').split('{streak}').join(data.user.streak||0), '👋');
+
+      var params = new URLSearchParams(window.location.search);
+
+      // Voltou do checkout do Mercado Pago (?assinatura=ok)? O webhook que
+      // confirma o pagamento pode levar alguns segundos pra chegar, então
+      // o status que acabamos de carregar pode estar desatualizado. Faz
+      // um polling curto em auth-me pra pegar o status final assim que
+      // o webhook processar, em vez de deixar o usuário com a tela velha
+      // até ele recarregar manualmente.
+      if (params.get('assinatura') === 'ok') {
+        // Limpa o parâmetro da URL pra não repetir o polling num refresh manual.
+        window.history.replaceState({}, '', window.location.pathname);
+
+        var pollStatusAtStart = data.user.planStatus;
+        var pollAttempts = 0;
+        var maxPollAttempts = 6; // ~12s no total (2s entre tentativas)
+
+        notify(T('painel.plan.toast_confirming_title','Confirmando pagamento'), T('painel.plan.toast_confirming_msg','Aguardando confirmação do Mercado Pago...'), '⏳');
+
+        var pollInterval = setInterval(function () {
+          pollAttempts++;
+          fetch('/.netlify/functions/auth-me')
+            .then(function (r) { return r.json(); })
+            .then(function (fresh) {
+              if (!fresh.user) return;
+              render(fresh.user);
+              var statusMudou = fresh.user.planStatus !== pollStatusAtStart;
+              if (statusMudou || pollAttempts >= maxPollAttempts) {
+                clearInterval(pollInterval);
+                if (statusMudou && fresh.user.planStatus === 'active') {
+                  notify(T('painel.plan.toast_confirmed_title','Assinatura confirmada'), T('painel.plan.toast_confirmed_msg','Seu plano já está ativo. 🎉'), '✅');
+                } else if (statusMudou && fresh.user.planStatus === 'pending') {
+                  notify(T('painel.plan.toast_pending_title','Pagamento em análise'), T('painel.plan.toast_pending_msg','Assim que for aprovado, avisamos por aqui.'), '⏳');
+                } else if (!statusMudou && pollAttempts >= maxPollAttempts) {
+                  notify(T('painel.plan.toast_stillconfirming_title','Ainda confirmando'), T('painel.plan.toast_stillconfirming_msg','Pode levar mais alguns instantes. Recarregue a página se precisar.'), 'ℹ️');
+                }
+              }
+            })
+            .catch(function () {
+              clearInterval(pollInterval);
+            });
+        }, 2000);
+      }
+
+      // Veio do login pra terminar uma assinatura (?assinar=pro|business)?
+      var planoPendente = params.get('assinar');
+      if (planoPendente === 'pro' || planoPendente === 'business') {
+        notify(T('painel.plan.toast_preparing_title','Preparando sua assinatura'), T('painel.plan.toast_preparing_msg','Redirecionando pro pagamento...'), '💳');
+        fetch('/.netlify/functions/mp-subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plan: planoPendente }),
+        })
+          .then(function(r){ return r.json().then(function(d){ return {ok:r.ok, data:d}; }); })
+          .then(function(res){
+            if (!res.ok || !res.data.checkoutUrl) {
+              notify(T('painel.plan.toast_subscribe_error_title','Não foi possível iniciar a assinatura'), res.data.error || T('painel.plan.toast_subscribe_error_fallback','Tente de novo pela página de planos.'), '⚠️');
+              return;
+            }
+            window.location.href = res.data.checkoutUrl;
+          })
+          .catch(function(){
+            notify(T('common.erro_conexao','Erro de conexão. Tente novamente.'), T('painel.plan.toast_conn_error_fallback','Tente novamente pela página de planos.'), '⚠️');
+          });
+      }
+    })
+    .catch(function(){
+      document.getElementById('skeleton').textContent = T('painel.loading.load_error','Não foi possível carregar o painel. Recarregue a página.');
+    });
+
+  // ---------- Re-render quando o idioma muda ----------
+  document.addEventListener('tf:langchange', function(){
+    if (state.user) render(state.user);
+  });
+})();
+</script>
+<script src="/js/register-sw.js" defer></script>
+</body>
+</html>
